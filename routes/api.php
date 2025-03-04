@@ -20,6 +20,7 @@ Route::post('member-register', [App\Http\Controllers\Member\MemberController::cl
 Route::post('member-login', [App\Http\Controllers\Member\MemberController::class, 'login']);
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('information',App\Http\Controllers\Admin\AdminController::class);
+    Route::resource('quiz',App\Http\Controllers\Admin\QuizController::class);
 });
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
