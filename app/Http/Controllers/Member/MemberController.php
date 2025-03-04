@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Member;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 class MemberController extends Controller
 {
     public function register(Request $request){
         try{
+
 
 
             $date = Carbon::now('Asia/Ho_Chi_Minh');
@@ -32,7 +34,6 @@ class MemberController extends Controller
             $district =  isset($request->district) ? $request->district : '';
             $ward =  isset($request->ward) ? $request->ward : '';
             $province =  isset($request->province) ? $request->province : '';
-            $MaKH = isset($request->MaKH) ? $request->MaKH : '';
 
             $isExistEmail = Member::where("email", $email)
                 ->first();
@@ -48,18 +49,17 @@ class MemberController extends Controller
 
                 $member = Member::create([
                     'username' => $username,
-                    'mem_code' => '',
+                    'mem_code' =>  $mem_code,
                     'gender' => $gender,
                     'email' => $email,
                     'password' => Hash::make($password),
-                    // 'address' => $address,
+                    'address' => $address,
                     // 'company' => $company,
                     'full_name' => $full_name,
                     'avatar' => '',
                     'phone' => $phone,
                     // 'provider' =>'',
                     'provider_id' => '',
-
                     'ward' => $ward,
                     'district' => $district,
                     'city_province' => $province,

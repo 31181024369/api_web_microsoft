@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 Route::match(['get','post'],'/admin-login',[App\Http\Controllers\Admin\LoginAdminController::class,'login'])->name('admin-login');
 Route::get('/admin-information',[App\Http\Controllers\Admin\LoginAdminController::class,'information']);
 
+Route::post('member-register', [App\Http\Controllers\Member\MemberController::class, 'register']);
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('information',App\Http\Controllers\Admin\AdminController::class);
 });
