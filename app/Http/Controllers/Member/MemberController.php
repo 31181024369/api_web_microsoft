@@ -13,7 +13,6 @@ class MemberController extends Controller
         try{
 
 
-
             $date = Carbon::now('Asia/Ho_Chi_Minh');
             $timestamp = strtotime($date);
             // check null fill
@@ -84,6 +83,52 @@ class MemberController extends Controller
                 'status' => false,
                 'message' => $e->getMessage()
             ], 422);
+        }
+
+    }
+    public function login(Request $request){
+        try{
+
+            $member=Member::where('username',$request->username)
+            ->first();
+
+            if(!$member)
+            {
+                return response()->json([
+                    'status' =>false,
+                    'message' => 'userNotExist'
+                    ]);
+            }
+            $abbreviation = "";
+            $string = ucwords($member->password);
+            $words = explode(" ", "$string");
+            foreach($words as $word){
+                $abbreviation .= $word[0];
+            }
+
+
+            if(isset($member) && $abbreviation != "$" && Hash::check($request->password,$member->password)==false)
+            {
+                Member::where('id', $member->id)->first()->update(['password' => Hash::make($request->password)]);
+            }
+
+            if( $member && $abbreviation == "$" && Hash::check($request->password,$member->password)){
+
+                return response()->json([
+                    'status' => true,
+                    'member' => $member
+                    ]);
+            }else {
+                return response()->json([
+                    'status'=>false,
+                    'message' => 'wrongPassword'
+                ]);
+            }
+        }catch(Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
         }
 
     }

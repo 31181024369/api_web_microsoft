@@ -17,6 +17,7 @@ Route::match(['get','post'],'/admin-login',[App\Http\Controllers\Admin\LoginAdmi
 Route::get('/admin-information',[App\Http\Controllers\Admin\LoginAdminController::class,'information']);
 
 Route::post('member-register', [App\Http\Controllers\Member\MemberController::class, 'register']);
+Route::post('member-login', [App\Http\Controllers\Member\MemberController::class, 'login']);
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('information',App\Http\Controllers\Admin\AdminController::class);
 });
