@@ -50,40 +50,39 @@ class TheOryCategoryController extends Controller
 
     public function create()
     {
-        //
+        return 111;
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'friendly_url' => 'required|string|max:255',
-            'parentid' => 'required|integer',
-            'display' => 'required|boolean',
-        ]);
-
         try {
+            $validatedData = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string|max:255',
+                'friendly_url' => 'required|string|max:255',
+                'parentid' => 'required|integer',
+                'display' => 'required|boolean',
+            ]);
+
             $theOryCategory = new TheOryCategory();
-            $theOryCategory->title = $request->input('title');
-            $theOryCategory->description = $request->input('description');
-            $theOryCategory->friendly_url = $request->input('friendly_url');
-            $theOryCategory->parentid = $request->input('parentid');
-            $theOryCategory->display = $request->input('display');
+            $theOryCategory->title = $validatedData['title'];
+            $theOryCategory->description = $validatedData['description'];
+            $theOryCategory->friendly_url = $validatedData['friendly_url'];
+            $theOryCategory->parentid = $validatedData['parentid'];
+            $theOryCategory->display = $validatedData['display'];
             $theOryCategory->save();
 
-            $response = [
-                'status' => true,
-                'theOryCategory' => $theOryCategory,
-            ];
-            return response()->json($response, 200);
-        } catch (\Exception $e) {
-            $errorMessage = $e->getMessage();
-            $response = [
+            return response()->json(['status' => true, 'message' => 'Category created successfully'], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
                 'status' => false,
-                'error' => $errorMessage
-            ];
-            return response()->json($response, 500);
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -97,22 +96,97 @@ class TheOryCategoryController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        try {
+            $theOryCategory = TheOryCategory::findOrFail($id);
+            return response()->json([
+                'status' => true,
+                'data' => $theOryCategory
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+            'friendly_url' => 'required|string|max:255',
+            'parentid' => 'required|integer',
+            'display' => 'required|boolean',
+        ]);
+
+        try {
+            $theOryCategory = TheOryCategory::findOrFail($id);
+            $theOryCategory->title = $request->title;
+            $theOryCategory->description = $request->description;
+            $theOryCategory->friendly_url = $request->friendly_url;
+            $theOryCategory->parentid = $request->parentid;
+            $theOryCategory->display = $request->display;
+            $theOryCategory->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'success'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(
+                ['status' => false, 'error' => $e->getMessage()],
+                500
+            );
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        //
+        try {
+            $theOryCategory = TheOryCategory::findOrFail($id);
+            $theOryCategory->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'success'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'exists:blacklists,id',
+            ]);
+
+            $ids = $request->input('ids');
+            if (is_array($ids)) {
+                $ids = implode(",", $ids);
+            }
+
+            $idsArray = explode(",", $ids);
+
+            foreach ($idsArray as $id) {
+                TheOryCategory::whereIn('id', $idsArray)->delete();
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'success'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi xóa dữ liệu: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

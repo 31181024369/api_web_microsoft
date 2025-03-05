@@ -19,8 +19,10 @@ Route::get('/admin-information', [App\Http\Controllers\Admin\LoginAdminControlle
 
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('information', App\Http\Controllers\Admin\AdminController::class);
-    Route::resource('theory-category', App\Http\Controllers\Admin\TheOryCategoryController::class);
 });
+
+Route::resource('theory-category', App\Http\Controllers\Admin\TheOryCategoryController::class);
+Route::delete('theory-categorys/delete', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'delete']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
