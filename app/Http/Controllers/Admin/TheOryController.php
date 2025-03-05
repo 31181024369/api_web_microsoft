@@ -131,26 +131,38 @@ class TheOryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
-    public function delete(Request $request)
-    {
         try {
             $validatedData = $request->validate([
-                'id' => 'required|exists:theory,theory_id',
+                'title' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'short_description' => 'nullable|string',
+                'friendly_url' => 'required|string|max:255',
+                'meta_keywords' => 'nullable|string|max:255',
+                'meta_description' => 'nullable|string|max:255',
+                'picture' => 'nullable',
+                'display' => 'required|boolean',
+                'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
 
-            $theOry = TheOry::findOrFail($validatedData['id']);
-            $theOry->delete();
+            $theOry = TheOry::findOrFail($id);
+            $theOry->title = $validatedData['title'];
+            $theOry->description = $validatedData['description'] ?? null;
+            $theOry->short_description = $validatedData['short_description'] ?? null;
+            $theOry->friendly_url = $validatedData['friendly_url'];
+            $theOry->meta_keywords = $validatedData['meta_keywords'] ?? null;
+            $theOry->meta_description = $validatedData['meta_description'] ?? null;
+
+            $filePath = $theOry->picture;
+            if ($request->hasFile('picture')) {
+                $file = $request->file('picture');
+                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
+                $filePath = 'uploads/admin/' . $fileName;
+                $file->move(public_path('uploads/admin'), $fileName);
+            }
+            $theOry->picture = $filePath;
+            $theOry->display = $validatedData['display'];
+            $theOry->cat_id = $validatedData['cat_id'];
+            $theOry->save();
 
             return response()->json([
                 'status' => true,
@@ -165,6 +177,58 @@ class TheOryController extends Controller
             return response()->json([
                 'status' => false,
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        try {
+            $theory = TheOry::findOrFail($id);
+            $theory->delete();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'success'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function delete(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'exists:theory,theory_id',
+            ]);
+
+            $ids = $request->input('ids');
+            if (is_array($ids)) {
+                $ids = implode(",", $ids);
+            }
+
+            $idsArray = explode(",", $ids);
+
+            foreach ($idsArray as $id) {
+                TheOry::whereIn('theory_id', $idsArray)->delete();
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'success'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Lỗi khi xóa dữ liệu: ' . $e->getMessage()
             ], 500);
         }
     }
