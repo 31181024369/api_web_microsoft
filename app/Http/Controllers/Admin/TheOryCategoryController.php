@@ -14,34 +14,38 @@ use Carbon\Carbon;
 
 class TheOryCategoryController extends Controller
 {
-
     public function index(Request $request)
     {
         try {
-            // $now = date('d-m-Y H:i:s');
-            // $stringTime = strtotime($now);
-            // DB::table('adminlogs')->insert([
-            //     'admin_id' => Auth::guard('admin')->user()->id,
-            //     'time' =>  $stringTime,
-            //     'ip' => $request->ip(),
-            //     'action' => 'show all newsCategory',
-            //     'cat' => 'newsCategory',
-            // ]);
+            $query = TheOryCategory::query();
 
-            if ($request->data == 'undefined' || $request->data == "") {
-                $theOryCategory = TheOryCategory::all();
-            } else {
-                $theOryCategory = TheOryCategory::where('title', 'like', '%' . $request->data . '%')->get();
+            if ($request->data != 'undefined' && $request->data != "") {
+                $query->where(function ($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->data . '%')
+                        ->orWhere('friendly_url', 'like', '%' . $request->data . '%');
+                });
             }
+
+            $perPage = $request->input('per_page', 10);
+
+            $theOryCategory = $query->paginate($perPage);
+
             $response = [
                 'status' => true,
-                'list' => $theOryCategory,
+                'list' => $theOryCategory->items(),
+                'pagination' => [
+                    'current_page' => $theOryCategory->currentPage(),
+                    'total_pages' => $theOryCategory->lastPage(),
+                    'per_page' => $theOryCategory->perPage(),
+                    'total' => $theOryCategory->total(),
+                ],
             ];
+
             return response()->json($response, 200);
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
             $response = [
-                'status' => 'false',
+                'status' => false,
                 'error' => $errorMessage
             ];
             return response()->json($response, 500);
@@ -60,7 +64,6 @@ class TheOryCategoryController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string|max:255',
                 'friendly_url' => 'required|string|max:255',
-                'parentid' => 'required|integer',
                 'display' => 'required|boolean',
             ]);
 
@@ -68,11 +71,10 @@ class TheOryCategoryController extends Controller
             $theOryCategory->title = $validatedData['title'];
             $theOryCategory->description = $validatedData['description'];
             $theOryCategory->friendly_url = $validatedData['friendly_url'];
-            $theOryCategory->parentid = $validatedData['parentid'];
             $theOryCategory->display = $validatedData['display'];
             $theOryCategory->save();
 
-            return response()->json(['status' => true, 'message' => 'Category created successfully'], 201);
+            return response()->json(['status' => true, 'message' => 'success'], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => false,
@@ -91,9 +93,6 @@ class TheOryCategoryController extends Controller
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         try {
@@ -164,7 +163,7 @@ class TheOryCategoryController extends Controller
         try {
             $request->validate([
                 'ids' => 'required|array',
-                'ids.*' => 'exists:blacklists,id',
+                'ids.*' => 'exists:theory_category,cat_id',
             ]);
 
             $ids = $request->input('ids');
@@ -175,7 +174,7 @@ class TheOryCategoryController extends Controller
             $idsArray = explode(",", $ids);
 
             foreach ($idsArray as $id) {
-                TheOryCategory::whereIn('id', $idsArray)->delete();
+                TheOryCategory::whereIn('cat_id', $idsArray)->delete();
             }
 
             return response()->json([

@@ -16,8 +16,27 @@ class TheOryCategory extends Model
     protected $fillable = [
         'title',
         'description',
+        'short_description',
         'friendly_url',
-        'parentid',
+        'meta_keywords',
+        'meta_description',
+        'picture',
         'display',
+        'parentid',
     ];
+
+    public function parent()
+    {
+        return $this->belongsTo(TheOryCategory::class, 'parentid', 'cat_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(TheOryCategory::class, 'parentid', 'cat_id');
+    }
+
+    public function theories()
+    {
+        return $this->hasMany(TheOry::class, 'cat_id', 'cat_id');
+    }
 }
