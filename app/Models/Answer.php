@@ -10,7 +10,7 @@ class Answer extends Model
     protected $table = 'quiz_answer';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'description', 'correct_answer', 'question_id'
+        'description', 'correct_answer', 'question_id','letter'
     ];
     public function quiz()
     {

@@ -10,7 +10,7 @@ class Quiz extends Model
     protected $table = 'quiz';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'name','description', 'picture', 'diffculty','time','display'
+        'name','description', 'picture', 'diffculty','time','display','friendly_url','friendly_title','metakey','metadesc'
     ];
     public function Question()
     {

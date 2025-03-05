@@ -21,5 +21,10 @@ class Question extends Model
     {
         return $this->hasMany(Answer::class,'question_id','id');
     }
+    public function AnswerUser()
+    {
+        return $this->hasMany(Answer::class, 'question_id', 'id')
+                ->select(['id', 'question_id', 'description', 'letter']);
+    }
 
 }

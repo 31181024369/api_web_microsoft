@@ -18,7 +18,7 @@ class QuizController extends Controller
             if(!empty($request->input('data'))&& $request->input('data') !== 'null'&& $request->input('data') !== 'undefined'){
                 $query=$query->where("name", 'like', '%' . $request->input('data') . '%');
             }
-            $query= $query->orderBy('id','desc')->get();
+            $query= $query->orderBy('id','desc')->paginate(10);
             return response()->json([
                 'status'=>true,
                 'data'=>$query
@@ -52,11 +52,11 @@ class QuizController extends Controller
             $Quiz=new Quiz();
 
             $filePath = '';
-            if ( $request->picture != null )
+            if ( $request->selectedFile != null )
             {
                 $DIR = $disPath.'\uploads\quiz';
                 $httpPost = file_get_contents( 'php://input' );
-                $file_chunks = explode( ';base64,', $request->picture[ 0 ] );
+                $file_chunks = explode( ';base64,', $request->selectedFile[ 0 ] );
                 $fileType = explode( 'image/', $file_chunks[ 0 ] );
                 $image_type = $fileType[ 0 ];
                 //return response()->json( $file_chunks );
@@ -67,18 +67,22 @@ class QuizController extends Controller
                 $filePath = 'quiz/'.$name . '.png';
                 file_put_contents( $file,  $base64Img );
             }
-            $Quiz->name=$request->name;
-            $Quiz->description=$request->description??'';
-            $Quiz->diffculty=$request->diffculty??'';
+            $Quiz->name=$request->title;
+            // $Quiz->description=$request->description??'';
+            // $Quiz->diffculty=$request->diffculty??'';
             $Quiz->picture=$filePath;
-            $Quiz->time=$request->time??0;
-            $Quiz->display=$request->display??0;
+            $Quiz->time=$request->duration??0;
+            $Quiz->display=$request->visible??0;
+            $Quiz->friendly_url=$request->friendlyUrl;
+            $Quiz->friendly_title=$request->pageTitle;
+            $Quiz->metakey=$request->metaKeyword;
+            $Quiz->metadesc=$request->metaDesc;
             $Quiz->save();
             foreach($request->questions as $questions){
 
                 $questionId =DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
-                    'description' =>  $questions['question_text'],
+                    'description' =>  $questions['questionText'],
                     // 'image'=>$questions->image??'',
                 ]);
 
@@ -86,7 +90,8 @@ class QuizController extends Controller
                     //quiz_answer
                     DB::table('quiz_answer')->insert([
                         'question_id' => $questionId,
-                        'description' =>  $answers['question_text']??'',
+                        'letter'=>$answers['option_letter']??'',
+                        'description' =>  $answers['option_text']??'',
                         'correct_answer'=>$answers['is_correct']??'',
                     ]);
 
@@ -150,12 +155,12 @@ class QuizController extends Controller
             }
 
             $filePath = '';
-            if ( $request->picture != null && $request->picture != $Quiz->picture )
+            if ( $request->selectedFile != null && $request->selectedFile != $Quiz->picture )
             {
 
                 $DIR = $disPath.'\uploads\quiz';
                 $httpPost = file_get_contents( 'php://input' );
-                $file_chunks = explode( ';base64,', $request->picture[ 0 ] );
+                $file_chunks = explode( ';base64,', $request->selectedFile[ 0 ] );
                 $fileType = explode( 'image/', $file_chunks[ 0 ] );
                 $image_type = $fileType[ 0 ];
 
@@ -171,13 +176,14 @@ class QuizController extends Controller
                 $filePath = $Quiz->picture;
             }
 
-            $Quiz->name=$request->name;
+            $Quiz->name=$request->title;
             $Quiz->picture=$filePath;
-            $Quiz->description=$request->description??'';
-            $Quiz->diffculty=$request->diffculty??'';
-
-            $Quiz->time=$request->time??0;
-            $Quiz->display=$request->display??0;
+            $Quiz->time=$request->duration??0;
+            $Quiz->display=$request->visible??0;
+            $Quiz->friendly_url=$request->friendlyUrl;
+            $Quiz->friendly_title=$request->pageTitle;
+            $Quiz->metakey=$request->metaKeyword;
+            $Quiz->metadesc=$request->metaDesc;
             $Quiz->save();
 
 
@@ -192,15 +198,16 @@ class QuizController extends Controller
             foreach($request->questions as $questions){
                 $questionId =DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
-                    'description' =>  $questions->question_text,
-                    'image'=>$questions->image??'',
+                    'description' =>  $questions['questionText'],
+                    // 'image'=>$questions->image??'',
                 ]);
-                foreach($questions->answers as $answers){
+                foreach($questions['answers'] as $answers){
                     //quiz_answer
                     DB::table('quiz_answer')->insert([
                         'question_id' => $questionId,
-                        'description' =>  $questions->question_text,
-                        'correct_answer'=>$questions->is_correct??'',
+                        'letter'=>$answers['option_letter']??'',
+                        'description' =>  $answers['option_text']??'',
+                        'correct_answer'=>$answers['is_correct']??'',
                     ]);
 
                 }
