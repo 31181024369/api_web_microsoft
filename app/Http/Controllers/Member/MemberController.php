@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Member;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 class MemberController extends Controller
 {
     public function register(Request $request){
@@ -19,7 +20,6 @@ class MemberController extends Controller
             $username = isset($request->accountName) ? $request->accountName : '';
             $password = isset($request->password) ? $request->password : '';
             $full_name = isset($request->fullName) ? $request->fullName : '';
-            $gender = isset($request->gender) ? $request->gender : '';
             $email = isset($request->email) ? $request->email : '';
             $mem_code = isset($request->mem_code) ? $request->mem_code : '';
 
@@ -32,7 +32,8 @@ class MemberController extends Controller
             $district =  isset($request->district) ? $request->district : '';
             $ward =  isset($request->ward) ? $request->ward : '';
             $province =  isset($request->province) ? $request->province : '';
-            $MaKH = isset($request->MaKH) ? $request->MaKH : '';
+            $nameCompany=  isset($request->nameCompany) ? $request->nameCompany : '';
+            $tax =  isset($request->tax) ? $request->tax : '';
 
             $isExistEmail = Member::where("email", $email)
                 ->first();
@@ -48,25 +49,24 @@ class MemberController extends Controller
 
                 $member = Member::create([
                     'username' => $username,
-                    'mem_code' => '',
-                    'gender' => $gender,
+                    'mem_code' =>  $mem_code,
                     'email' => $email,
                     'password' => Hash::make($password),
-                    // 'address' => $address,
+                    'address' => $address,
                     // 'company' => $company,
                     'full_name' => $full_name,
                     'avatar' => '',
                     'phone' => $phone,
                     // 'provider' =>'',
                     'provider_id' => '',
-
                     'ward' => $ward,
                     'district' => $district,
                     'city_province' => $province,
                     'date_join'=>$timestamp,
                     'm_status' => 0,
-                    'status' => 0
-
+                    'status' => 0,
+                    'nameCompany'=>$nameCompany,
+                    'tax'=>$tax
                 ]);
                 return response()->json([
                     'message'=> 'Đăng ký thành công',
@@ -84,6 +84,54 @@ class MemberController extends Controller
                 'status' => false,
                 'message' => $e->getMessage()
             ], 422);
+        }
+
+    }
+    public function login(Request $request){
+        try{
+
+            $member=Member::where('username',$request->username)
+            ->first();
+
+            if(!$member)
+            {
+                return response()->json([
+                    'status' =>false,
+                    'message' => 'userNotExist'
+                    ]);
+            }
+            $abbreviation = "";
+            $string = ucwords($member->password);
+            $words = explode(" ", "$string");
+            foreach($words as $word){
+                $abbreviation .= $word[0];
+            }
+
+
+            if(isset($member) && $abbreviation != "$" && Hash::check($request->password,$member->password)==false)
+            {
+                Member::where('id', $member->id)->first()->update(['password' => Hash::make($request->password)]);
+            }
+
+            if( $member && $abbreviation == "$" && Hash::check($request->password,$member->password)){
+
+                $success = $member->createToken('Member')->accessToken;
+                return response()->json([
+                    'status' => true,
+                    'token'=>$success,
+                    'member' => $member
+                    ]);
+            }else {
+                return response()->json([
+                    'status'=>false,
+                    'message' => 'wrongPassword'
+                ]);
+            }
+        }catch(Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
         }
 
     }
