@@ -26,7 +26,7 @@ class AdminController extends Controller
                 $list=$query->where('username','like', '%' . $request->data . '%')
                 ->orWhere('email','like', '%' . $request->data . '%');
             }
-            $adminList=$list->paginate(5);
+            $adminList=$list->paginate(10);
             return response()->json([
                 'status'=>true,
                 'adminList'=>$adminList,
