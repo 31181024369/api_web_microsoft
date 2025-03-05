@@ -20,7 +20,6 @@ class MemberController extends Controller
             $username = isset($request->accountName) ? $request->accountName : '';
             $password = isset($request->password) ? $request->password : '';
             $full_name = isset($request->fullName) ? $request->fullName : '';
-            $gender = isset($request->gender) ? $request->gender : '';
             $email = isset($request->email) ? $request->email : '';
             $mem_code = isset($request->mem_code) ? $request->mem_code : '';
 
@@ -33,6 +32,8 @@ class MemberController extends Controller
             $district =  isset($request->district) ? $request->district : '';
             $ward =  isset($request->ward) ? $request->ward : '';
             $province =  isset($request->province) ? $request->province : '';
+            $nameCompany=  isset($request->nameCompany) ? $request->nameCompany : '';
+            $tax =  isset($request->tax) ? $request->tax : '';
 
             $isExistEmail = Member::where("email", $email)
                 ->first();
@@ -49,7 +50,6 @@ class MemberController extends Controller
                 $member = Member::create([
                     'username' => $username,
                     'mem_code' =>  $mem_code,
-                    'gender' => $gender,
                     'email' => $email,
                     'password' => Hash::make($password),
                     'address' => $address,
@@ -64,8 +64,9 @@ class MemberController extends Controller
                     'city_province' => $province,
                     'date_join'=>$timestamp,
                     'm_status' => 0,
-                    'status' => 0
-
+                    'status' => 0,
+                    'nameCompany'=>$nameCompany,
+                    'tax'=>$tax
                 ]);
                 return response()->json([
                     'message'=> 'Đăng ký thành công',
@@ -114,8 +115,10 @@ class MemberController extends Controller
 
             if( $member && $abbreviation == "$" && Hash::check($request->password,$member->password)){
 
+                $success = $member->createToken('Member')->accessToken;
                 return response()->json([
                     'status' => true,
+                    'token'=>$success,
                     'member' => $member
                     ]);
             }else {

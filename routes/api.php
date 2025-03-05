@@ -25,6 +25,7 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
 Route::group(['prefix' => 'member'], function () {
     Route::get('/show-quiz',[App\Http\Controllers\Member\QuizController::class,'showQuiz']);
     Route::get('/show-quiz-detail/{slug}',[App\Http\Controllers\Member\QuizController::class,'showDetailQuiz']);
+    Route::post('/submit-quiz',[App\Http\Controllers\Member\QuizController::class,'submitQuiz']);
 });
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

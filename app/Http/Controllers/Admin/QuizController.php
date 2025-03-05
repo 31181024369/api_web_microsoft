@@ -69,7 +69,7 @@ class QuizController extends Controller
             }
             $Quiz->name=$request->title;
             // $Quiz->description=$request->description??'';
-            // $Quiz->diffculty=$request->diffculty??'';
+            $Quiz->pointAward=$request->pointAward??'';
             $Quiz->picture=$filePath;
             $Quiz->time=$request->duration??0;
             $Quiz->display=$request->visible??0;
@@ -82,7 +82,7 @@ class QuizController extends Controller
 
                 $questionId =DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
-                    'description' =>  $questions['questionText'],
+                    'description' =>  $questions['question_text'],
                     // 'image'=>$questions->image??'',
                 ]);
 
@@ -128,7 +128,8 @@ class QuizController extends Controller
         try{
             $Quiz=Quiz::with('Question.Answer')->where('id',$id)->first();
             return response()->json([
-                'status'=>$Quiz
+                'status'=>true,
+                'data'=>$Quiz
             ]);
         }catch (\Exception $error) {
 
@@ -178,6 +179,7 @@ class QuizController extends Controller
 
             $Quiz->name=$request->title;
             $Quiz->picture=$filePath;
+            $Quiz->pointAward=$request->pointAward??'';
             $Quiz->time=$request->duration??0;
             $Quiz->display=$request->visible??0;
             $Quiz->friendly_url=$request->friendlyUrl;
@@ -190,15 +192,15 @@ class QuizController extends Controller
             $question =DB::table('quiz_question')->where('quiz_id',$Quiz->id)->first();
             $answerId=DB::table('quiz_answer')->where('question_id',$question->id)->first();
             if($answerId){
-                $answerId->delete();
+                DB::table('quiz_answer')->where('question_id',$question->id)->delete();
             }
             if($question){
-                $question->delete();
+                DB::table('quiz_question')->where('quiz_id',$Quiz->id)->delete();
             }
             foreach($request->questions as $questions){
                 $questionId =DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
-                    'description' =>  $questions['questionText'],
+                    'description' =>  $questions['question_text'],
                     // 'image'=>$questions->image??'',
                 ]);
                 foreach($questions['answers'] as $answers){
@@ -243,13 +245,14 @@ class QuizController extends Controller
             $question =DB::table('quiz_question')->where('quiz_id',$Quiz->id)->first();
             $answerId=DB::table('quiz_answer')->where('question_id',$question->id)->first();
             if($Quiz){
-                $Quiz->delete();
+
                 if($answerId){
-                    $answerId->delete();
+                    DB::table('quiz_answer')->where('question_id',$question->id)->delete();
                 }
                 if($question){
-                    $question->delete();
+                    DB::table('quiz_question')->where('quiz_id',$Quiz->id)->delete();
                 }
+                $Quiz->delete();
 
             }
             return response()->json([
