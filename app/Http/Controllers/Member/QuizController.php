@@ -10,56 +10,59 @@ use App\Models\Answer;
 use App\Models\QuizMemberAnswer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 class QuizController extends Controller
 {
-    public function showQuiz(Request $request){
-        try{
-            $Quiz=Quiz::where('display',1)->orderBy('id','desc')->paginate(10);
+    public function showQuiz(Request $request)
+    {
+        try {
+            $Quiz = Quiz::where('display', 1)->orderBy('id', 'desc')->paginate(10);
             return response()->json([
-                'status'=>true,
-                'data'=>$Quiz
+                'status' => true,
+                'data' => $Quiz
             ]);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
             ], 422);
         }
     }
-    public function showDetailQuiz($slug){
-        try{
-            $Quiz=Quiz::with('Question.AnswerUser')->where('friendly_url',$slug)->first();
+    public function showDetailQuiz($slug)
+    {
+        try {
+            $Quiz = Quiz::with('Question.AnswerUser')->where('friendly_url', $slug)->first();
             return response()->json([
-                'status'=>true,
-                'data'=>$Quiz
+                'status' => true,
+                'data' => $Quiz
             ]);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
             ], 422);
         }
     }
-    public function submitQuiz(Request $request){
-        try{
-            $member=Auth::guard('member')->user();
-            $data=$request->all();
+    public function submitQuiz(Request $request)
+    {
+        try {
+            $member = Auth::guard('member')->user();
+            $data = $request->all();
 
-            $result=0;
+            $result = 0;
 
-            $Question=Question::where("quiz_id",$data['quizId'])->get();
+            $Question = Question::where("quiz_id", $data['quizId'])->get();
 
 
-            $times=0;
-            $checkTimes=QuizMemberAnswer::where('member_id',$member->id)
-            ->where('quiz_id',$data['quizId'])->orderBy('id','desc')->first();
+            $times = 0;
+            $checkTimes = QuizMemberAnswer::where('member_id', $member->id)
+                ->where('quiz_id', $data['quizId'])->orderBy('id', 'desc')->first();
 
-            if(empty($checkTimes)){
-                $times=1;
+            if (empty($checkTimes)) {
+                $times = 1;
+            } else {
 
-            }else{
-
-                $times=$checkTimes->times+1;
+                $times = $checkTimes->times + 1;
             }
 
 
@@ -71,7 +74,7 @@ class QuizController extends Controller
                     'quiz_id' => $data['quizId'] ?? '',
                     'question_id' => $item['question_id'] ?? '',
                     'user_answers' => $string ?? '',
-                    'times'=>$times
+                    'times' => $times
                 ]);
 
 
@@ -112,25 +115,22 @@ class QuizController extends Controller
             // ]);
 
 
-            $history=DB::table('history')->insert([
+            $history = DB::table('history')->insert([
                 'member_id' => $member->id,
-                'quiz_id'=>$data['quizId']??'',
+                'quiz_id' => $data['quizId'] ?? '',
                 'total_questions' =>  count($Question),
-                'total_correct'=> $result,
-                'times'=>$times
+                'total_correct' => $result,
+                'times' => $times
             ]);
 
 
             return response()->json([
-                'status'=>true,
-                'total'=>count($Question),
-                'result'=>$result,
-                'times'=>$times
+                'status' => true,
+                'total' => count($Question),
+                'result' => $result,
+                'times' => $times
             ]);
-
-
-
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()

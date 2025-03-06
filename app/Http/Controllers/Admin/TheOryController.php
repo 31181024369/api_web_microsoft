@@ -78,24 +78,11 @@ class TheOryController extends Controller
             $theOry->meta_keywords = $validatedData['meta_keywords'] ?? null;
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
-            $filePath = '';
+            $filePath = null;
+
             if (!empty($validatedData['picture'])) {
                 $image = $validatedData['picture'];
-                if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
-                    $image = substr($image, strpos($image, ',') + 1);
-                    $type = strtolower($type[1]);
-
-                    if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
-                        throw new \Exception('Invalid image type');
-                    }
-
-                    $image = str_replace(' ', '+', $image);
-                    $imageName = uniqid() . '.' . $type;
-                    File::put(public_path('uploads/theory') . '/' . $imageName, base64_decode($image));
-                    $filePath = 'uploads/theory/' . $imageName;
-                } else {
-                    throw new \Exception('Invalid image data');
-                }
+                $filePath = $this->saveBase64Image($image, 'upload/theory');
             }
 
             $theOry->picture = $filePath;
@@ -119,6 +106,7 @@ class TheOryController extends Controller
             ], 500);
         }
     }
+
 
     public function show(string $id) {}
 
@@ -250,5 +238,31 @@ class TheOryController extends Controller
                 'message' => 'Lỗi khi xóa dữ liệu: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    private function saveBase64Image($base64Image, $folderPath)
+    {
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches)) {
+            $imageType = $matches[1];
+            $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+            $base64Image = base64_decode($base64Image);
+
+            if ($base64Image === false) {
+                throw new \Exception('Invalid base64 image data');
+            }
+
+            $fileName = uniqid('image_') . '.' . $imageType;
+            $filePath = $folderPath . '/' . $fileName;
+
+            if (!file_exists(public_path($folderPath))) {
+                mkdir(public_path($folderPath), 0777, true);
+            }
+
+            file_put_contents(public_path($filePath), $base64Image);
+
+            return $filePath;
+        }
+
+        throw new \Exception('Invalid image format');
     }
 }
