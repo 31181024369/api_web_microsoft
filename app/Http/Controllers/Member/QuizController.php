@@ -44,20 +44,34 @@ class QuizController extends Controller
         try{
             $member=Auth::guard('member')->user();
             $data=$request->all();
+
             $result=0;
+
             $Question=Question::where("quiz_id",$data['quizId'])->get();
+
+
+            $times=0;
+            $checkTimes=QuizMemberAnswer::where('member_id',$member->id)
+            ->where('quiz_id',$data['quizId'])->orderBy('id','desc')->first();
+
+            if(empty($checkTimes)){
+                $times=1;
+
+            }else{
+
+                $times=$checkTimes->times+1;
+            }
+
+
             foreach ($data['answers'] as $item) {
                 $string = is_array($item['answer']) ? implode(',', $item['answer']) : strval($item['answer']);
-
-                $checkTimes=QuizMemberAnswer::where('member_id',$member->id)
-                ->where('quiz_id',$data['quizId'])->get();
 
                 $quizMemberAnswerId = DB::table('quiz_member_answer')->insertGetId([
                     'member_id' => $member->id,
                     'quiz_id' => $data['quizId'] ?? '',
                     'question_id' => $item['question_id'] ?? '',
                     'user_answers' => $string ?? '',
-
+                    'times'=>$times
                 ]);
 
 
@@ -87,16 +101,31 @@ class QuizController extends Controller
                     if ($isValid) {
                         $result++; // Nếu tất cả ID trong user_answers đều có correct_answer = 1 thì cộng thêm 1
                     }
-
-
                 }
             }
+            // $quiz_member=DB::table('quiz_member')->insert([
+            //     'member_id' => $member->id,
+            //     'quiz_id'=>$data['quizId']??'',
+            //     'is_finish' =>  1,
+            //     'time_start'=> $result,
+            //     'time_end'=>$times
+            // ]);
+
+
+            $history=DB::table('history')->insert([
+                'member_id' => $member->id,
+                'quiz_id'=>$data['quizId']??'',
+                'total_questions' =>  count($Question),
+                'total_correct'=> $result,
+                'times'=>$times
+            ]);
 
 
             return response()->json([
                 'status'=>true,
                 'total'=>count($Question),
-                'result'=>$result
+                'result'=>$result,
+                'times'=>$times
             ]);
 
 
