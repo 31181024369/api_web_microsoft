@@ -10,6 +10,6 @@ class History extends Model
     protected $table = 'quiz';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'member_id','quiz_id', 'total_questions', 'total_correct'
+        'member_id','quiz_id', 'total_questions', 'total_correct','times'
     ];
 }

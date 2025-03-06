@@ -18,6 +18,11 @@ class QuizController extends Controller
             if(!empty($request->input('data'))&& $request->input('data') !== 'null'&& $request->input('data') !== 'undefined'){
                 $query=$query->where("name", 'like', '%' . $request->input('data') . '%');
             }
+            if(!empty($request->input('cat_id'))&& $request->input('cat_id') !== 'null'&& $request->input('cat_id') !== 'undefined'){
+                $query=$query->where("cat_id",$request->input('cat_id'));
+            }
+
+
             $query= $query->orderBy('id','desc')->paginate(10);
             return response()->json([
                 'status'=>true,
@@ -71,6 +76,8 @@ class QuizController extends Controller
             // $Quiz->description=$request->description??'';
             $Quiz->pointAward=$request->pointAward??'';
             $Quiz->picture=$filePath;
+            $Quiz->cat_id=$request->cat_id;
+            $Quiz->theory_id=$request->theory_id;
             $Quiz->time=$request->duration??0;
             $Quiz->display=$request->visible??0;
             $Quiz->friendly_url=$request->friendlyUrl;
@@ -179,6 +186,8 @@ class QuizController extends Controller
 
             $Quiz->name=$request->title;
             $Quiz->picture=$filePath;
+            $Quiz->cat_id=$request->cat_id;
+            $Quiz->theory_id=$request->theory_id;
             $Quiz->pointAward=$request->pointAward??'';
             $Quiz->time=$request->duration??0;
             $Quiz->display=$request->visible??0;
