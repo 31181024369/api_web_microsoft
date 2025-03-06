@@ -29,4 +29,9 @@ class TheOry extends Model
     {
         return $this->belongsTo(TheOryCategory::class, 'cat_id', 'cat_id');
     }
+
+    public function quiz()
+    {
+        return $this->hasOne(Quiz::class, 'theory_id', 'theory_id');
+    }
 }
