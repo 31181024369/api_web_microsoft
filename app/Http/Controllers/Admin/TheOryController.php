@@ -64,7 +64,7 @@ class TheOryController extends Controller
                 'friendly_url' => 'required|string|max:255',
                 'meta_keywords' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'picture' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+                'picture' => 'nullable|string',
                 'display' => 'required|boolean',
                 'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
@@ -79,11 +79,23 @@ class TheOryController extends Controller
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
             $filePath = '';
-            if ($request->hasFile('picture')) {
-                $image = $request->file('picture');
-                $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('uploads/theory'), $imageName);
-                $filePath = 'uploads/theory/' . $imageName;
+            if (!empty($validatedData['picture'])) {
+                $image = $validatedData['picture'];
+                if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
+                    $image = substr($image, strpos($image, ',') + 1);
+                    $type = strtolower($type[1]);
+
+                    if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                        throw new \Exception('Invalid image type');
+                    }
+
+                    $image = str_replace(' ', '+', $image);
+                    $imageName = uniqid() . '.' . $type;
+                    File::put(public_path('uploads/theory') . '/' . $imageName, base64_decode($image));
+                    $filePath = 'uploads/theory/' . $imageName;
+                } else {
+                    throw new \Exception('Invalid image data');
+                }
             }
 
             $theOry->picture = $filePath;
@@ -136,7 +148,7 @@ class TheOryController extends Controller
                 'friendly_url' => 'required|string|max:255',
                 'meta_keywords' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'picture' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+                'picture' => 'nullable|string',
                 'display' => 'required|boolean',
                 'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
@@ -150,11 +162,23 @@ class TheOryController extends Controller
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
             $filePath = $theOry->picture;
-            if ($request->hasFile('picture')) {
-                $image = $request->file('picture');
-                $imageName = uniqid() . '.' . $image->getClientOriginalExtension();
-                $image->move(public_path('uploads/theory'), $imageName);
-                $filePath = 'uploads/theory/' . $imageName;
+            if (!empty($validatedData['picture'])) {
+                $image = $validatedData['picture'];
+                if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
+                    $image = substr($image, strpos($image, ',') + 1);
+                    $type = strtolower($type[1]);
+
+                    if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                        throw new \Exception('Invalid image type');
+                    }
+
+                    $image = str_replace(' ', '+', $image);
+                    $imageName = uniqid() . '.' . $type;
+                    File::put(public_path('uploads/theory') . '/' . $imageName, base64_decode($image));
+                    $filePath = 'uploads/theory/' . $imageName;
+                } else {
+                    throw new \Exception('Invalid image data');
+                }
             }
 
             $theOry->picture = $filePath;
