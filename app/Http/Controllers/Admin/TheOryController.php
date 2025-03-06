@@ -185,7 +185,6 @@ class TheOryController extends Controller
         }
     }
 
-
     public function destroy(string $id)
     {
         try {
