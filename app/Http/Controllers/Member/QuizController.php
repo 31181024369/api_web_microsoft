@@ -51,7 +51,6 @@ class QuizController extends Controller
 
                 $checkTimes=QuizMemberAnswer::where('member_id',$member->id)
                 ->where('quiz_id',$data['quizId'])->get();
-
                 $quizMemberAnswerId = DB::table('quiz_member_answer')->insertGetId([
                     'member_id' => $member->id,
                     'quiz_id' => $data['quizId'] ?? '',
