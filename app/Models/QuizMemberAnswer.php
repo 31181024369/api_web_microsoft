@@ -10,6 +10,6 @@ class QuizMemberAnswer extends Model
     protected $table = 'quiz_member_answer';
     protected $primaryKey = 'id';
     protected $fillable = [
-       'member_id','quiz_id','question_id','user_answers'
+       'member_id','quiz_id','question_id','user_answers','times'
     ];
 }

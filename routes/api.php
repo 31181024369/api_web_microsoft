@@ -21,12 +21,17 @@ Route::post('member-register', [App\Http\Controllers\Member\MemberController::cl
 Route::post('member-login', [App\Http\Controllers\Member\MemberController::class, 'login']);
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('information', App\Http\Controllers\Admin\AdminController::class);
+    Route::post('update-infor-admin', [App\Http\Controllers\Admin\LoginAdminController::class,'uploadInformation']);
+
     Route::resource('quiz', App\Http\Controllers\Admin\QuizController::class);
 });
 Route::group(['prefix' => 'member'], function () {
     Route::get('/show-quiz', [App\Http\Controllers\Member\QuizController::class, 'showQuiz']);
     Route::get('/show-quiz-detail/{slug}', [App\Http\Controllers\Member\QuizController::class, 'showDetailQuiz']);
     Route::post('/submit-quiz', [App\Http\Controllers\Member\QuizController::class, 'submitQuiz']);
+
+    Route::get('infor-member', [App\Http\Controllers\Member\MemberController::class, 'inforMember']);
+
 });
 
 //Theory Category
