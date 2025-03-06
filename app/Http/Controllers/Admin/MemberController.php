@@ -68,7 +68,11 @@ class MemberController extends Controller
     public function edit(string $id)
     {
         try{
-
+            $member=Member::where('id',$id)->first();
+            return response()->json([
+                'status'=>true,
+                'data'=>$member
+            ]);
         }catch (\Exception $error) {
 
             return response()->json([
@@ -84,7 +88,27 @@ class MemberController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try{
+            $member=Member::where('id',$id)->first();
+            $member -> email = $request->email;
+            $member -> full_name = $request->fullname;
+            $member -> phone = $request->phone;
+            $member ->nameCompany=$request->nameCompany;
+            $member -> tax = $request->tax;
+            $member ->m_status = $request->m_status;
+            $member->save();
+            if($request->m_status==1){
+
+            }
+
+        }catch (\Exception $error) {
+
+            return response()->json([
+                'status_code' => 500,
+                'message' => 'error',
+                'error' => $error->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -92,6 +116,24 @@ class MemberController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try{
+            $member=Member::where('id',$id)->first();
+            if (!$member) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Member not found'
+                ], 404);
+            }
+            $member->delete();
+
+
+        }catch (\Exception $error) {
+
+            return response()->json([
+                'status_code' => 500,
+                'message' => 'error',
+                'error' => $error->getMessage()
+            ], 500);
+        }
     }
 }

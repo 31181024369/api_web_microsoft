@@ -20,7 +20,6 @@ class MemberController extends Controller
             $date = Carbon::now('Asia/Ho_Chi_Minh');
             $timestamp = strtotime($date);
             // check null fill
-
             $username = isset($request->accountName) ? $request->accountName : '';
             $password = isset($request->password) ? $request->password : '';
             $full_name = isset($request->fullName) ? $request->fullName : '';
