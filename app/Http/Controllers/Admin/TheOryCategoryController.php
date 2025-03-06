@@ -115,7 +115,7 @@ class TheOryCategoryController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'friendly_url' => 'required|string|max:255',
-            'parentid' => 'required|integer',
+            'parentid' => 'nullable|integer',
             'display' => 'required|boolean',
         ]);
 

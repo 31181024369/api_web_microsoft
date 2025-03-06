@@ -29,13 +29,17 @@ Route::group(['prefix' => 'member'], function () {
     Route::post('/submit-quiz', [App\Http\Controllers\Member\QuizController::class, 'submitQuiz']);
 });
 
-//The Ory Category
+//Theory Category
 Route::resource('theory-category', App\Http\Controllers\Admin\TheOryCategoryController::class);
 Route::delete('theory-categorys/delete', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'delete']);
 
-//The Ory
+//Theory
 Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
 Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheOryController::class, 'delete']);
+
+//Gift Category
+Route::resource('gift-category', App\Http\Controllers\Admin\GiftCategoryController::class);
+Route::delete('gift-categories/delete', [App\Http\Controllers\Admin\GiftCategoryController::class, 'delete']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
