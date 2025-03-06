@@ -28,6 +28,8 @@ class TheOryCategoryController extends Controller
 
             $perPage = $request->input('per_page', 10);
 
+            $theOryCategory = $query->orderBy('cat_id', 'desc')->paginate($perPage);
+
             $theOryCategory = $query->paginate($perPage);
 
             $response = [
