@@ -68,7 +68,11 @@ class MemberController extends Controller
     public function edit(string $id)
     {
         try{
-
+            $member=Member::where('id',$id)->first();
+            return response()->json([
+                'status'=>true,
+                'data'=>$member
+            ]);
         }catch (\Exception $error) {
 
             return response()->json([
@@ -84,7 +88,17 @@ class MemberController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try{
+            $member=Member::where('id',$id)->first();
+
+        }catch (\Exception $error) {
+
+            return response()->json([
+                'status_code' => 500,
+                'message' => 'error',
+                'error' => $error->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -92,6 +106,24 @@ class MemberController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try{
+            $member=Member::where('id',$id)->first();
+            if (!$member) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Member not found'
+                ], 404);
+            }
+            $member->delete();
+
+
+        }catch (\Exception $error) {
+
+            return response()->json([
+                'status_code' => 500,
+                'message' => 'error',
+                'error' => $error->getMessage()
+            ], 500);
+        }
     }
 }
