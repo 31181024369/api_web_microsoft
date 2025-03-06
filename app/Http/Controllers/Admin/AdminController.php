@@ -19,7 +19,6 @@ class AdminController extends Controller
             if ($request->data == 'undefined' || $request->data == "") {
                 $list = $query;
             } else {
-
                 $list = $query->where('username', 'like', '%' . $request->data . '%')
                     ->orWhere('email', 'like', '%' . $request->data . '%');
             }
