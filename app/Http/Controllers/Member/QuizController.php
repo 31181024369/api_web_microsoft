@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Quiz;
 use App\Models\Question;
 use App\Models\Answer;
+use App\Models\QuizMemberAnswer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 class QuizController extends Controller
@@ -43,26 +44,59 @@ class QuizController extends Controller
         try{
             $member=Auth::guard('member')->user();
             $data=$request->all();
-            foreach($data['answers'] as $item){
-                $string='';
-                if (is_array($item['answer'])) {
-                    $string = implode(',', $item['answer']);
-                } else {
-                    $string = strval($item['answer']);
-                }
+            $result=0;
+            $Question=Question::where("quiz_id",$data['quizId'])->get();
+            foreach ($data['answers'] as $item) {
+                $string = is_array($item['answer']) ? implode(',', $item['answer']) : strval($item['answer']);
 
-                $quizMemberAnswer=DB::table('quiz_member_answer')->insert([
+                $checkTimes=QuizMemberAnswer::where('member_id',$member->id)
+                ->where('quiz_id',$data['quizId'])->get();
+
+                $quizMemberAnswerId = DB::table('quiz_member_answer')->insertGetId([
                     'member_id' => $member->id,
-                    'quiz_id'=>$data['quizId']??'',
-                    'question_id' =>  $item['question_id']??'',
-                    'user_answers'=> $string??'',
+                    'quiz_id' => $data['quizId'] ?? '',
+                    'question_id' => $item['question_id'] ?? '',
+                    'user_answers' => $string ?? '',
+
                 ]);
-                Answer::where('question_id',$item['question_id'])->where('correct_answer',1);
+
+
+                // Lấy danh sách câu trả lời đúng theo question_id
+                $answers = Answer::where('question_id', $item['question_id'])
+                    ->where('correct_answer', 1)
+                    ->pluck('question_id', 'id')
+                    ->toArray();
+
+                // Lấy bản ghi vừa chèn từ model
+                $quizMemberAnswer = QuizMemberAnswer::find($quizMemberAnswerId);
+
+
+                // Kiểm tra điều kiện
+                if ($quizMemberAnswer) {
+                    $userAnswerIds = explode(',', $quizMemberAnswer->user_answers);
+                    $isValid = true;
+
+
+                    foreach ($userAnswerIds as $id) {
+                        if (!isset($answers[$id]) || $answers[$id] == 0) {
+                            $isValid = false;
+                            break;
+                        }
+                    }
+
+                    if ($isValid) {
+                        $result++; // Nếu tất cả ID trong user_answers đều có correct_answer = 1 thì cộng thêm 1
+                    }
+
+
+                }
             }
 
 
             return response()->json([
-                'status'=>true
+                'status'=>true,
+                'total'=>count($Question),
+                'result'=>$result
             ]);
 
 
