@@ -28,6 +28,8 @@ class TheOryController extends Controller
 
             $perPage = $request->input('per_page', 10);
 
+            $theOry = $query->orderBy('theory_id', 'desc')->paginate($perPage);
+
             $theOry = $query->with('category:cat_id,title')->paginate($perPage);
 
             $response = [

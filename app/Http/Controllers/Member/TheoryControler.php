@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 
 class TheoryControler extends Controller
 {
-
     public function index()
     {
         try {
