@@ -64,7 +64,7 @@ class TheOryController extends Controller
                 'friendly_url' => 'required|string|max:255',
                 'meta_keywords' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'picture' => 'nullable', // Ảnh có thể là chuỗi hoặc mảng
+                'picture' => 'nullable',
                 'display' => 'required|boolean',
                 'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
@@ -80,12 +80,11 @@ class TheOryController extends Controller
 
             $filePath = null;
 
-            // Xử lý ảnh base64 (nếu FE gửi dưới dạng mảng)
             if (!empty($validatedData['picture'])) {
                 $imageData = is_array($validatedData['picture']) ? $validatedData['picture'][0] : $validatedData['picture'];
 
                 if (is_string($imageData)) {
-                    $filePath = $this->saveBase64Image($imageData, 'upload/theory');
+                    $filePath = $this->saveBase64Image($imageData, 'uploads/theory');
                 }
             }
 
@@ -139,7 +138,7 @@ class TheOryController extends Controller
                 'friendly_url' => 'required|string|max:255',
                 'meta_keywords' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'picture' => 'nullable', // Ảnh có thể là chuỗi hoặc mảng
+                'picture' => 'nullable',
                 'display' => 'required|boolean',
                 'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
@@ -154,12 +153,11 @@ class TheOryController extends Controller
 
             $filePath = $theOry->picture;
 
-            // Xử lý ảnh base64 nếu có (hỗ trợ cả mảng và chuỗi)
             if (!empty($validatedData['picture'])) {
                 $imageData = is_array($validatedData['picture']) ? $validatedData['picture'][0] : $validatedData['picture'];
 
                 if (is_string($imageData)) {
-                    $filePath = $this->saveBase64Image($imageData, 'upload/theory');
+                    $filePath = $this->saveBase64Image($imageData, 'uploads/theory');
                 }
             }
 
