@@ -27,9 +27,10 @@ class TheoryControler extends Controller
                             })->map(function ($quiz) {
                                 return [
                                     'id' => $quiz->id,
-                                    'title' => $quiz->title,
+                                    'title' => $quiz->name,
                                     'time' => $quiz->time,
                                     'pointAward' => $quiz->pointAward,
+                                    'friendly_url' => $quiz->friendly_url,
                                     'question_count' => $quiz->questions->count(),
                                 ];
                             }),
