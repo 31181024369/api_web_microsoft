@@ -80,8 +80,8 @@ class TheOryController extends Controller
             if ($request->hasFile('picture')) {
                 $file = $request->file('picture');
                 $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
-                $filePath = 'uploads/admin/' . $fileName;
-                $file->move(public_path('uploads/admin'), $fileName);
+                $filePath = 'uploads/Theory/' . $fileName;
+                $file->move(public_path('uploads/Theory'), $fileName);
             }
             $theOry->picture = $filePath;
             $theOry->display = $validatedData['display'];
