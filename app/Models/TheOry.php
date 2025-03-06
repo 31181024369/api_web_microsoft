@@ -34,4 +34,9 @@ class TheOry extends Model
     {
         return $this->hasOne(Quiz::class, 'theory_id', 'theory_id');
     }
+
+    public function quizzes()
+    {
+        return $this->hasMany(Quiz::class, 'theory_id', 'theory_id');
+    }
 }
