@@ -53,9 +53,6 @@ class TheOryController extends Controller
 
     public function create() {}
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         try {

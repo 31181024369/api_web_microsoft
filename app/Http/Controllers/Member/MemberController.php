@@ -7,10 +7,12 @@ use Illuminate\Http\Request;
 use App\Models\Member;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+
 class MemberController extends Controller
 {
-    public function register(Request $request){
-        try{
+    public function register(Request $request)
+    {
+        try {
 
 
             $date = Carbon::now('Asia/Ho_Chi_Minh');
@@ -32,20 +34,20 @@ class MemberController extends Controller
             $district =  isset($request->district) ? $request->district : '';
             $ward =  isset($request->ward) ? $request->ward : '';
             $province =  isset($request->province) ? $request->province : '';
-            $nameCompany=  isset($request->nameCompany) ? $request->nameCompany : '';
+            $nameCompany =  isset($request->nameCompany) ? $request->nameCompany : '';
             $tax =  isset($request->tax) ? $request->tax : '';
 
             $isExistEmail = Member::where("email", $email)
                 ->first();
             $isExistUsername = Member::where("username", $username)
-            ->first();
+                ->first();
 
-            if ($isExistUsername ) {
-                return response()->json(['message'=>'existUserName', 'status' => false]);
+            if ($isExistUsername) {
+                return response()->json(['message' => 'existUserName', 'status' => false]);
             }
-            if ($isExistEmail ) {
-                return response()->json(['message'=>'existEmail', 'status' => false]);
-            }else{
+            if ($isExistEmail) {
+                return response()->json(['message' => 'existEmail', 'status' => false]);
+            } else {
 
                 $member = Member::create([
                     'username' => $username,
@@ -62,77 +64,74 @@ class MemberController extends Controller
                     'ward' => $ward,
                     'district' => $district,
                     'city_province' => $province,
-                    'date_join'=>$timestamp,
+                    'date_join' => $timestamp,
                     'm_status' => 0,
                     'status' => 0,
-                    'nameCompany'=>$nameCompany,
-                    'tax'=>$tax
+                    'nameCompany' => $nameCompany,
+                    'tax' => $tax
                 ]);
                 return response()->json([
-                    'message'=> 'Đăng ký thành công',
+                    'message' => 'Đăng ký thành công',
                     'data' => [
                         // 'Id' => $member->MaKH,
                         'TenDD' => $member->username,
                         'Email' => $member->email,
                         'Phone' => $member->phone,
                     ],
-                    'status'=> true,
+                    'status' => true,
                 ]);
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
             ], 422);
         }
-
     }
-    public function login(Request $request){
-        try{
+    public function login(Request $request)
+    {
+        try {
 
-            $member=Member::where('username',$request->username)
-            ->first();
+            $member = Member::where('username', $request->username)
+                ->first();
 
-            if(!$member)
-            {
+            if (!$member) {
                 return response()->json([
-                    'status' =>false,
+                    'status' => false,
                     'message' => 'userNotExist'
-                    ]);
+                ]);
             }
             $abbreviation = "";
             $string = ucwords($member->password);
             $words = explode(" ", "$string");
-            foreach($words as $word){
+            foreach ($words as $word) {
                 $abbreviation .= $word[0];
             }
 
 
-            if(isset($member) && $abbreviation != "$" && Hash::check($request->password,$member->password)==false)
-            {
+            if (isset($member) && $abbreviation != "$" && Hash::check($request->password, $member->password) == false) {
                 Member::where('id', $member->id)->first()->update(['password' => Hash::make($request->password)]);
             }
 
-            if( $member && $abbreviation == "$" && Hash::check($request->password,$member->password)){
+            if ($member && $abbreviation == "$" && Hash::check($request->password, $member->password)) {
 
                 $success = $member->createToken('Member')->accessToken;
                 return response()->json([
                     'status' => true,
-                    'token'=>$success,
+                    'token' => $success,
                     'member' => $member
-                    ]);
-            }else {
+                ]);
+            } else {
                 return response()->json([
-                    'status'=>false,
+                    'status' => false,
                     'message' => 'wrongPassword'
                 ]);
             }
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
             ]);
         }
-
     }
 }
