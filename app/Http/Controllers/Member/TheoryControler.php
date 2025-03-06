@@ -15,7 +15,12 @@ class TheoryControler extends Controller
             $theOryCategory = TheOryCategory::all();
             $response = [
                 'status' => true,
-                'list' => $theOryCategory,
+                'list' => $theOryCategory->map(function ($item) {
+                    return [
+                        'id' => $item->cat_id,
+                        'title' => $item->title,
+                    ];
+                })
             ];
             return response()->json($response, 200);
         } catch (\Exception $e) {
