@@ -3,17 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
-
 Route::match(['get', 'post'], '/admin-login', [App\Http\Controllers\Admin\LoginAdminController::class, 'login'])->name('admin-login');
 Route::get('/admin-information', [App\Http\Controllers\Admin\LoginAdminController::class, 'information']);
 
@@ -21,7 +10,7 @@ Route::post('member-register', [App\Http\Controllers\Member\MemberController::cl
 Route::post('member-login', [App\Http\Controllers\Member\MemberController::class, 'login']);
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('information', App\Http\Controllers\Admin\AdminController::class);
-    Route::post('update-infor-admin', [App\Http\Controllers\Admin\LoginAdminController::class,'uploadInformation']);
+    Route::post('update-infor-admin', [App\Http\Controllers\Admin\LoginAdminController::class, 'uploadInformation']);
 
     Route::resource('quiz', App\Http\Controllers\Admin\QuizController::class);
 });
@@ -31,16 +20,15 @@ Route::group(['prefix' => 'member'], function () {
     Route::post('/submit-quiz', [App\Http\Controllers\Member\QuizController::class, 'submitQuiz']);
 
     Route::get('infor-member', [App\Http\Controllers\Member\MemberController::class, 'inforMember']);
-
 });
 
 //Theory Category
 Route::resource('theory-category', App\Http\Controllers\Admin\TheOryCategoryController::class);
 Route::delete('theory-categorys/delete', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'delete']);
 
-//Theory
+// Theory
 Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
-Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheOryController::class, 'delete']);
+Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
 
 //Gift Category
 Route::resource('gift-category', App\Http\Controllers\Admin\GiftCategoryController::class);

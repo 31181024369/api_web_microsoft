@@ -6,6 +6,7 @@ use App\Models\TheOry;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 
 class TheOryController extends Controller
 {
@@ -27,7 +28,7 @@ class TheOryController extends Controller
 
             $perPage = $request->input('per_page', 10);
 
-            $theOry = $query->paginate($perPage);
+            $theOry = $query->with('category:cat_id,title')->paginate($perPage);
 
             $response = [
                 'status' => true,
@@ -63,12 +64,13 @@ class TheOryController extends Controller
                 'friendly_url' => 'required|string|max:255',
                 'meta_keywords' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'picture' => 'nullable',
+                'picture' => 'nullable|string',
                 'display' => 'required|boolean',
                 'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
 
             $theOry = new TheOry();
+
             $theOry->title = $validatedData['title'];
             $theOry->description = $validatedData['description'] ?? null;
             $theOry->short_description = $validatedData['short_description'] ?? null;
@@ -77,12 +79,25 @@ class TheOryController extends Controller
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
             $filePath = '';
-            if ($request->hasFile('picture')) {
-                $file = $request->file('picture');
-                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
-                $filePath = 'uploads/Theory/' . $fileName;
-                $file->move(public_path('uploads/Theory'), $fileName);
+            if (!empty($validatedData['picture'])) {
+                $image = $validatedData['picture'];
+                if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
+                    $image = substr($image, strpos($image, ',') + 1);
+                    $type = strtolower($type[1]);
+
+                    if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                        throw new \Exception('Invalid image type');
+                    }
+
+                    $image = str_replace(' ', '+', $image);
+                    $imageName = uniqid() . '.' . $type;
+                    File::put(public_path('uploads/theory') . '/' . $imageName, base64_decode($image));
+                    $filePath = 'uploads/theory/' . $imageName;
+                } else {
+                    throw new \Exception('Invalid image data');
+                }
             }
+
             $theOry->picture = $filePath;
             $theOry->display = $validatedData['display'];
             $theOry->cat_id = $validatedData['cat_id'];
@@ -123,9 +138,6 @@ class TheOryController extends Controller
         }
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         try {
@@ -136,7 +148,7 @@ class TheOryController extends Controller
                 'friendly_url' => 'required|string|max:255',
                 'meta_keywords' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'picture' => 'nullable',
+                'picture' => 'nullable|string',
                 'display' => 'required|boolean',
                 'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
@@ -150,12 +162,25 @@ class TheOryController extends Controller
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
             $filePath = $theOry->picture;
-            if ($request->hasFile('picture')) {
-                $file = $request->file('picture');
-                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
-                $filePath = 'uploads/admin/' . $fileName;
-                $file->move(public_path('uploads/admin'), $fileName);
+            if (!empty($validatedData['picture'])) {
+                $image = $validatedData['picture'];
+                if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
+                    $image = substr($image, strpos($image, ',') + 1);
+                    $type = strtolower($type[1]); // jpg, png, gif
+
+                    if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
+                        throw new \Exception('Invalid image type');
+                    }
+
+                    $image = str_replace(' ', '+', $image);
+                    $imageName = uniqid() . '.' . $type;
+                    File::put(public_path('uploads/theory') . '/' . $imageName, base64_decode($image));
+                    $filePath = 'uploads/theory/' . $imageName;
+                } else {
+                    throw new \Exception('Invalid image data');
+                }
             }
+
             $theOry->picture = $filePath;
             $theOry->display = $validatedData['display'];
             $theOry->cat_id = $validatedData['cat_id'];
@@ -178,9 +203,6 @@ class TheOryController extends Controller
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {
