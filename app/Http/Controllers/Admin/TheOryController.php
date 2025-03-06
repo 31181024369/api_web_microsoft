@@ -64,7 +64,7 @@ class TheOryController extends Controller
                 'friendly_url' => 'required|string|max:255',
                 'meta_keywords' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'picture' => 'nullable|string',
+                'picture' => 'nullable',
                 'display' => 'required|boolean',
                 'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
