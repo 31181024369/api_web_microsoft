@@ -11,7 +11,7 @@ Route::post('member-login', [App\Http\Controllers\Member\MemberController::class
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('information', App\Http\Controllers\Admin\AdminController::class);
 
-    Route::post('update-infor-admin', [App\Http\Controllers\Admin\LoginAdminController::class,'uploadInformation']);
+    Route::post('update-infor-admin', [App\Http\Controllers\Admin\LoginAdminController::class, 'uploadInformation']);
     Route::resource('member', App\Http\Controllers\Admin\MemberController::class);
 
     Route::resource('quiz', App\Http\Controllers\Admin\QuizController::class);
@@ -20,6 +20,10 @@ Route::group(['prefix' => 'member'], function () {
     Route::get('/show-quiz', [App\Http\Controllers\Member\QuizController::class, 'showQuiz']);
     Route::get('/show-quiz-detail/{slug}', [App\Http\Controllers\Member\QuizController::class, 'showDetailQuiz']);
     Route::post('/submit-quiz', [App\Http\Controllers\Member\QuizController::class, 'submitQuiz']);
+
+    //Theory
+    Route::resource('theory', App\Http\Controllers\Member\TheoryControler::class);
+    Route::delete('theorys/delete', [App\Http\Controllers\Member\TheoryControler::class, 'delete']);
 
     Route::get('infor-member', [App\Http\Controllers\Member\MemberController::class, 'inforMember']);
 });
@@ -35,6 +39,7 @@ Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::cl
 //Gift Category
 Route::resource('gift-category', App\Http\Controllers\Admin\GiftCategoryController::class);
 Route::delete('gift-categories/delete', [App\Http\Controllers\Admin\GiftCategoryController::class, 'delete']);
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

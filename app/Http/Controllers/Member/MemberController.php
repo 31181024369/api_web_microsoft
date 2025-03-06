@@ -135,22 +135,22 @@ class MemberController extends Controller
             ]);
         }
     }
-    public function inforMember(Request $request){
-        try{
-            $member=Auth::guard('member')->user();
-            if($member){
+    public function inforMember(Request $request)
+    {
+        try {
+            $member = Auth::guard('member')->user();
+            if ($member) {
                 return response()->json([
-                    'status'=>true,
-                    'data'=>$member
+                    'status' => true,
+                    'data' => $member
                 ]);
-            }else{
+            } else {
                 return response()->json([
-                    'status'=>false,
-                    'data'=>null
+                    'status' => false,
+                    'data' => null
                 ]);
             }
-
-        }catch(Exception $e){
+        } catch (Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => $e->getMessage()
