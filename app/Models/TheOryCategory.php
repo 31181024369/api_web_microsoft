@@ -39,4 +39,9 @@ class TheOryCategory extends Model
     {
         return $this->hasMany(TheOry::class, 'cat_id', 'cat_id');
     }
+
+    public function quizzes()
+    {
+        return $this->hasManyThrough(Quiz::class, TheOry::class, 'cat_id', 'theory_id', 'cat_id', 'theory_id');
+    }
 }

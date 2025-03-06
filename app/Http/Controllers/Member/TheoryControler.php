@@ -12,13 +12,29 @@ class TheoryControler extends Controller
     public function index()
     {
         try {
-            $theOryCategory = TheOryCategory::all();
+            $theOryCategory = TheOryCategory::with(['theories', 'quizzes.questions'])->get();
+            dd($theOryCategory);
             $response = [
                 'status' => true,
                 'list' => $theOryCategory->map(function ($item) {
                     return [
                         'id' => $item->cat_id,
                         'title' => $item->title,
+                        'theories' => $item->theories->map(function ($theory) {
+                            return [
+                                'id' => $theory->theory_id,
+                                'title' => $theory->title,
+                            ];
+                        }),
+                        'quizzes' => $item->quizzes->map(function ($quiz) {
+                            return [
+                                'id' => $quiz->id,
+                                'title' => $quiz->title,
+                                'time' => $quiz->time,
+                                'pointAward' => $quiz->pointAward,
+                                'question_count' => $quiz->questions->count(),
+                            ];
+                        }),
                     ];
                 })
             ];
