@@ -90,6 +90,16 @@ class MemberController extends Controller
     {
         try{
             $member=Member::where('id',$id)->first();
+            $member -> email = $request->email;
+            $member -> full_name = $request->fullname;
+            $member -> phone = $request->phone;
+            $member ->nameCompany=$request->nameCompany;
+            $member -> tax = $request->tax;
+            $member ->m_status = $request->m_status;
+            $member->save();
+            if($request->m_status==1){
+
+            }
 
         }catch (\Exception $error) {
 
