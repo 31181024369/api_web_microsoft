@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Member;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 class MemberController extends Controller
 {
     public function register(Request $request){
@@ -134,5 +135,27 @@ class MemberController extends Controller
             ]);
         }
 
+    }
+    public function inforMember(Request $request){
+        try{
+            $member=Auth::guard('member')->user();
+            if($member){
+                return response()->json([
+                    'status'=>true,
+                    'data'=>$member
+                ]);
+            }else{
+                return response()->json([
+                    'status'=>false,
+                    'data'=>null
+                ]);
+            }
+
+        }catch(Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }
