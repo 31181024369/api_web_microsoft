@@ -13,6 +13,7 @@ class TheoryControler extends Controller
     {
         try {
             $theOryCategory = TheOryCategory::with(['theories', 'quizzes.questions'])->get();
+            dd($theOryCategory);
             $response = [
                 'status' => true,
                 'list' => $theOryCategory->map(function ($item) {
