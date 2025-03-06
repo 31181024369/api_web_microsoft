@@ -139,7 +139,7 @@ class TheOryController extends Controller
                 'friendly_url' => 'required|string|max:255',
                 'meta_keywords' => 'nullable|string|max:255',
                 'meta_description' => 'nullable|string|max:255',
-                'picture' => 'nullable|string',
+                'picture' => 'nullable', // Ảnh có thể là chuỗi hoặc mảng
                 'display' => 'required|boolean',
                 'cat_id' => 'required|exists:theory_category,cat_id',
             ]);
@@ -153,22 +153,13 @@ class TheOryController extends Controller
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
             $filePath = $theOry->picture;
+
+            // Xử lý ảnh base64 nếu có (hỗ trợ cả mảng và chuỗi)
             if (!empty($validatedData['picture'])) {
-                $image = $validatedData['picture'];
-                if (preg_match('/^data:image\/(\w+);base64,/', $image, $type)) {
-                    $image = substr($image, strpos($image, ',') + 1);
-                    $type = strtolower($type[1]);
+                $imageData = is_array($validatedData['picture']) ? $validatedData['picture'][0] : $validatedData['picture'];
 
-                    if (!in_array($type, ['jpg', 'jpeg', 'png', 'gif'])) {
-                        throw new \Exception('Invalid image type');
-                    }
-
-                    $image = str_replace(' ', '+', $image);
-                    $imageName = uniqid() . '.' . $type;
-                    File::put(public_path('uploads/theory') . '/' . $imageName, base64_decode($image));
-                    $filePath = 'uploads/theory/' . $imageName;
-                } else {
-                    throw new \Exception('Invalid image data');
+                if (is_string($imageData)) {
+                    $filePath = $this->saveBase64Image($imageData, 'upload/theory');
                 }
             }
 
