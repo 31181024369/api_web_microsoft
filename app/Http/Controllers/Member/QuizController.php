@@ -101,10 +101,24 @@ class QuizController extends Controller
                     if ($isValid) {
                         $result++; // Nếu tất cả ID trong user_answers đều có correct_answer = 1 thì cộng thêm 1
                     }
-
-
                 }
             }
+            // $quiz_member=DB::table('quiz_member')->insert([
+            //     'member_id' => $member->id,
+            //     'quiz_id'=>$data['quizId']??'',
+            //     'is_finish' =>  1,
+            //     'time_start'=> $result,
+            //     'time_end'=>$times
+            // ]);
+
+
+            $history=DB::table('history')->insert([
+                'member_id' => $member->id,
+                'quiz_id'=>$data['quizId']??'',
+                'total_questions' =>  count($Question),
+                'total_correct'=> $result,
+                'times'=>$times
+            ]);
 
 
             return response()->json([

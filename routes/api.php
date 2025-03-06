@@ -22,7 +22,7 @@ Route::post('member-login', [App\Http\Controllers\Member\MemberController::class
 Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('information', App\Http\Controllers\Admin\AdminController::class);
     Route::post('update-infor-admin', [App\Http\Controllers\Admin\LoginAdminController::class,'uploadInformation']);
-
+    Route::resource('member', App\Http\Controllers\Admin\MemberController::class);
     Route::resource('quiz', App\Http\Controllers\Admin\QuizController::class);
 });
 Route::group(['prefix' => 'member'], function () {
