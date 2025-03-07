@@ -77,6 +77,13 @@ class QuizController extends Controller
 
                 $times = $checkTimes->times + 1;
             }
+            if(count($Question)!=count($data['answers'])){
+                return response()->json([
+                    'status'=>false,
+                    "success" => "unfinished",
+                    'message'=>"Bạn chưa hoàn thành tất cả các câu hỏi! Vui lòng kiểm tra lại trước khi nộp bài."
+                ]);
+            }
 
 
             foreach ($data['answers'] as $item) {
@@ -125,7 +132,7 @@ class QuizController extends Controller
                 'quiz_id'=>$data['quizId']??'',
                 'is_finish' =>  $point>=0.8?1:0,
                 'times' => $times,
-                'time_statrt'=>$data['startTime'],
+                'time_start'=>$data['startTime'],
                 'time_end'=>$data['endTime']
             ]);
 

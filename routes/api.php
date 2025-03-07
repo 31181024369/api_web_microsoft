@@ -15,6 +15,7 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('member', App\Http\Controllers\Admin\MemberController::class);
 
     Route::resource('quiz', App\Http\Controllers\Admin\QuizController::class);
+    Route::resource('result-exams', App\Http\Controllers\Admin\ResultExamsController::class);
 });
 Route::group(['prefix' => 'member'], function () {
     Route::get('/show-quiz', [App\Http\Controllers\Member\QuizController::class, 'showQuiz']);
