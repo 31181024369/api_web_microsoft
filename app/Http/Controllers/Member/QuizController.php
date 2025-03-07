@@ -91,6 +91,7 @@ class QuizController extends Controller
 
                 $quizMemberAnswerId = DB::table('quiz_member_answer')->insertGetId([
                     'member_id' => $member->id,
+
                     'quiz_id' => $data['quizId'] ?? '',
                     'question_id' => $item['question_id'] ?? '',
                     'user_answers' => $string ?? '',
@@ -148,8 +149,13 @@ class QuizController extends Controller
 
             return response()->json([
                 'status' => true,
-                // 'total' => count($Question),
-                // 'result' => $result,
+                'data' => [
+                    'total' => count($Question),
+                    'result' => $result,
+                    'is_finish' =>  $point>=0.8?1:0,
+                    'percent'=>round($point*100),
+                ],
+                "success" => "done",
                 // 'times' => $times
             ]);
         } catch (\Exception $e) {

@@ -9,6 +9,7 @@ use App\Models\Question;
 use App\Models\Answer;
 use App\Models\QuizMemberAnswer;
 use App\Models\QuizMember;
+use App\Models\History;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 class ResultExamsController extends Controller
@@ -19,7 +20,7 @@ class ResultExamsController extends Controller
     public function index(Request $request)
     {
         try{
-            $QuizMember=QuizMember::with('member','quiz')->orderBy('id','desc')->get();
+            $QuizMember=QuizMember::with('member','quiz')->orderBy('id','desc')->paginate(10);
             return response()->json([
                 'status'=>true,
                 'data'=> $QuizMember
@@ -74,6 +75,10 @@ class ResultExamsController extends Controller
     public function edit(string $id)
     {
         try{
+            $QuizMember=QuizMember::where('id',$id)->first();
+            $History=History::where('member_id',$QuizMember->member_id)
+            ->where('quiz_id',$QuizMember->quiz_id)->where('times',$QuizMember->times)->first();
+
 
         }catch (\Exception $error) {
 

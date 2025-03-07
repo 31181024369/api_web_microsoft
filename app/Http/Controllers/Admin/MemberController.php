@@ -158,7 +158,9 @@ class MemberController extends Controller
                 ], 404);
             }
             $member->delete();
-
+            return response()->json([
+                'status'=>true,
+            ]);
 
         }catch (\Exception $error) {
 
@@ -167,6 +169,37 @@ class MemberController extends Controller
                 'message' => 'error',
                 'error' => $error->getMessage()
             ], 500);
+        }
+    }
+    public function deleteAllMember(Request $request){
+
+
+        try{
+                $arr =$request->data;
+                if($arr )
+                {
+                    foreach ($arr as $item) {
+                        $list = Member::Find($item)->delete();
+                    }
+                }
+                else
+                {
+                    return response()->json([
+                        'status'=>false,
+                    ],422);
+                }
+                return response()->json([
+                    'status'=>true,
+                ],200);
+
+
+        }catch ( \Exception $e ) {
+            $errorMessage = $e->getMessage();
+            $response = [
+                'status' => false,
+                'error' => $errorMessage
+            ];
+            return response()->json( $response, 500 );
         }
     }
 }
