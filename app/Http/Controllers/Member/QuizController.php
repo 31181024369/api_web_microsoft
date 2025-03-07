@@ -119,13 +119,14 @@ class QuizController extends Controller
                     }
                 }
             }
-            // $quiz_member=DB::table('quiz_member')->insert([
-            //     'member_id' => $member->id,
-            //     'quiz_id'=>$data['quizId']??'',
-            //     'is_finish' =>  1,
-            //     'time_start'=> $result,
-            //     'time_end'=>$times
-            // ]);
+            $point=$result/count($Question);
+            $quiz_member=DB::table('quiz_member')->insert([
+                'member_id' => $member->id,
+                'quiz_id'=>$data['quizId']??'',
+                'is_finish' =>  $point>=0.8?1:0,
+                'time_start'=> $result,
+                'time_end'=>$times
+            ]);
 
 
             $history = DB::table('history')->insert([

@@ -23,7 +23,10 @@ class MemberController extends Controller
             }
             else{
                 $member=$query->where('username','like', '%' . $request->data . '%')
-                ->orWhere('email','like', '%' . $request->data . '%');
+                ->orWhere('email','like', '%' . $request->data . '%')
+                ->orWhere('tax','like', '%' . $request->data . '%')
+                ->orWhere('full_name','like', '%' . $request->data . '%')
+                ;
             }
             $member=$member->orderBy('id','desc')->paginate(10);
             return response()->json([
