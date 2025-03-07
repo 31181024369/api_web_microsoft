@@ -88,7 +88,7 @@ class QuizController extends Controller
                 $questionId = DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
                     'description' =>  $questions['question_text'],
-                    'question_type'=>$questions['question_type']
+                    'question_type' => $questions['question_type']
                     // 'image'=>$questions->image??'',
                 ]);
 
@@ -208,7 +208,7 @@ class QuizController extends Controller
                 $questionId = DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
                     'description' =>  $questions['question_text'],
-                    'question_type'=>$questions['question_type']
+                    'question_type' => $questions['question_type']
                     // 'image'=>$questions->image??'',
                 ]);
                 foreach ($questions['answers'] as $answers) {
