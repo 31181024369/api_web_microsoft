@@ -68,37 +68,41 @@ class TheoryControler extends Controller
         }
     }
 
-    public function show(Request $request)
+    public function shows(Request $request)
     {
         try {
-            $friendlyUrl = $request->route('friendly_url');
+            $path = $request->path();
+            $segments = explode('/', $path);
+            $friendlyUrl = end($segments);
+
             $theory = TheOry::where('friendly_url', $friendlyUrl)
                 ->with(['quizzes' => function ($query) {
-                    $query->select('id', 'theory_id', 'title', 'friendly_url', 'time', 'pointAward')
+                    $query->select('id', 'theory_id', 'friendly_url', 'name')
                         ->with('questions:id,quiz_id');
                 }])
-                ->select('theory_id', 'title', 'description', 'short_description', 'friendly_url', 'picture')
+                ->select('theory_id', 'title', 'description', 'short_description', 'friendly_url', 'picture', 'cat_id')
                 ->firstOrFail();
+
+            $quiz = $theory->quizzes->first();
 
             $response = [
                 'status' => true,
                 'data' => [
-                    'id' => $theory->theory_id,
-                    'title' => $theory->title,
-                    'description' => $theory->description,
-                    'short_description' => $theory->short_description,
-                    'friendly_url' => $theory->friendly_url,
-                    'picture' => $theory->picture,
-                    'quizzes' => $theory->quizzes->map(function ($quiz) {
-                        return [
-                            'id' => $quiz->id,
-                            'title' => $quiz->title,
-                            'friendly_url' => $quiz->friendly_url,
-                            'time' => $quiz->time,
-                            'pointAward' => $quiz->pointAward,
-                            'question_count' => $quiz->questions->count()
-                        ];
-                    })
+                    'theory' => [
+                        'id' => $theory->theory_id,
+                        'title' => $theory->title,
+                        'description' => $theory->description,
+                        'short_description' => $theory->short_description,
+                        'friendly_url' => $theory->friendly_url,
+                        'picture' => $theory->picture,
+                        'cat_id' => $theory->cat_id,
+                    ],
+                    'quiz' => $quiz ? [
+                        'id' => $quiz->id,
+                        'name' => $quiz->name,
+                        'friendly_url' => $quiz->friendly_url,
+                        'question_count' => $quiz->questions->count()
+                    ] : null
                 ]
             ];
 
