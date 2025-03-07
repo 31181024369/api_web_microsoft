@@ -39,4 +39,9 @@ class Quiz extends Model
     {
         return $this->belongsTo(TheOry::class, 'theory_id', 'theory_id');
     }
+
+    public function category()
+    {
+        return $this->belongsTo(TheOryCategory::class, 'cat_id', 'cat_id');
+    }
 }
