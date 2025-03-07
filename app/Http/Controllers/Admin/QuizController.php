@@ -15,7 +15,8 @@ class QuizController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Quiz::query();
+            $query = Quiz::with(['category:cat_id,title', 'theory:theory_id,title']);
+
             if (!empty($request->input('data')) && $request->input('data') !== 'null' && $request->input('data') !== 'undefined') {
                 $query = $query->where("name", 'like', '%' . $request->input('data') . '%');
             }
@@ -23,14 +24,36 @@ class QuizController extends Controller
                 $query = $query->where("cat_id", $request->input('cat_id'));
             }
 
+            $quizzes = $query->orderBy('id', 'desc')->paginate(10);
 
-            $query = $query->orderBy('id', 'desc')->paginate(10);
-            return response()->json([
+            $response = [
                 'status' => true,
-                'data' => $query
-            ]);
-        } catch (\Exception $error) {
+                'data' => $quizzes->through(function ($quiz) {
+                    return [
+                        'id' => $quiz->id,
+                        'name' => $quiz->name,
+                        'description' => $quiz->description,
+                        'picture' => $quiz->picture,
+                        'diffculty' => $quiz->diffculty,
+                        'time' => $quiz->time,
+                        'display' => $quiz->display,
+                        'friendly_url' => $quiz->friendly_url,
+                        'friendly_title' => $quiz->friendly_title,
+                        'metakey' => $quiz->metakey,
+                        'metadesc' => $quiz->metadesc,
+                        'pointAward' => $quiz->pointAward,
+                        'cat_id' => $quiz->cat_id,
+                        'category_title' => $quiz->category ? $quiz->category->title : null,
+                        'theory_id' => $quiz->theory_id,
+                        'theory_title' => $quiz->theory ? $quiz->theory->title : null,
+                        'created_at' => $quiz->created_at,
+                        'updated_at' => $quiz->updated_at
+                    ];
+                })
+            ];
 
+            return response()->json($response);
+        } catch (\Exception $error) {
             return response()->json([
                 'status_code' => 500,
                 'message' => 'error',
@@ -89,7 +112,7 @@ class QuizController extends Controller
                 $questionId = DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
                     'description' =>  $questions['question_text'],
-                    'question_type'=>$questions['question_type']
+                    'question_type' => $questions['question_type']
                     // 'image'=>$questions->image??'',
                 ]);
 
@@ -209,7 +232,7 @@ class QuizController extends Controller
                 $questionId = DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
                     'description' =>  $questions['question_text'],
-                    'question_type'=>$questions['question_type']
+                    'question_type' => $questions['question_type']
                     // 'image'=>$questions->image??'',
                 ]);
                 foreach ($questions['answers'] as $answers) {
