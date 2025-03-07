@@ -17,8 +17,7 @@ class TheoryControler extends Controller
         try {
             $theOryCategory = TheOryCategory::with(['theories.quizzes.questions'])->get();
             $response = [];
-            $member_id = Auth::id();
-
+            $member_id = Auth::guard('member')->user()?->id;
             foreach ($theOryCategory as $key => $item) {
                 $theories = $item->theories->map(function ($theory) use ($item, $member_id) {
                     $quiz = $theory->quizzes->first(function ($quiz) use ($item, $theory) {
