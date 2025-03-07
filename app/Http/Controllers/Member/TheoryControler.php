@@ -18,17 +18,8 @@ class TheoryControler extends Controller
 
             foreach ($theOryCategory as $key => $item) {
                 $theories = $item->theories->map(function ($theory) use ($item) {
-                    $quizzes = $theory->quizzes->filter(function ($quiz) use ($item, $theory) {
+                    $quiz = $theory->quizzes->first(function ($quiz) use ($item, $theory) {
                         return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
-                    })->take(10)->map(function ($quiz) {
-                        return [
-                            'id' => $quiz->id,
-                            'title' => $quiz->title,
-                            'friendly_url' => $quiz->friendly_url,
-                            'time' => $quiz->time,
-                            'pointAward' => $quiz->pointAward,
-                            'question_count' => $quiz->questions->count(),
-                        ];
                     });
 
                     $theoryData = [
@@ -36,13 +27,20 @@ class TheoryControler extends Controller
                         'title' => $theory->title,
                     ];
 
-                    if ($quizzes->isNotEmpty()) {
-                        $theoryData['quizzes'] = $quizzes;
+                    if ($quiz) {
+                        $theoryData['quiz'] = [
+                            'id' => $quiz->id,
+                            'name' => $quiz->name,
+                            'friendly_url' => $quiz->friendly_url,
+                            'time' => $quiz->time,
+                            'pointAward' => $quiz->pointAward,
+                            'question_count' => $quiz->questions->count(),
+                        ];
                     }
 
                     return $theoryData;
                 })->filter(function ($theory) {
-                    return isset($theory['quizzes']);
+                    return isset($theory['quiz']);
                 });
 
                 if ($theories->isNotEmpty()) {
@@ -56,13 +54,10 @@ class TheoryControler extends Controller
 
             return response()->json(['status' => true, 'list' => $response], 200);
         } catch (\Exception $e) {
-            $errorMessage = $e->getMessage();
-            $response = [
-                'status' => 'false',
-                'error' => $errorMessage
-            ];
-
-            return response()->json($response, 500);
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 
