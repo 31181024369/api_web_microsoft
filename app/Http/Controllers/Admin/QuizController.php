@@ -23,7 +23,6 @@ class QuizController extends Controller
                 $query = $query->where("cat_id", $request->input('cat_id'));
             }
 
-
             $query = $query->orderBy('id', 'desc')->paginate(10);
             return response()->json([
                 'status' => true,
