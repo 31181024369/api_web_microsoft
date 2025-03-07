@@ -18,7 +18,7 @@ class TheoryControler extends Controller
                 $theories = $item->theories->map(function ($theory) use ($item) {
                     $quizzes = $theory->quizzes->filter(function ($quiz) use ($item, $theory) {
                         return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
-                    })->map(function ($quiz) {
+                    })->take(10)->map(function ($quiz) {
                         return [
                             'id' => $quiz->id,
                             'title' => $quiz->title,
