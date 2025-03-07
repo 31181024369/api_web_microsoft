@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Member;
 
 use App\Models\TheOryCategory;
 use App\Models\TheOry;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth;
+use App\Models\QuizMember;
 
 class TheoryControler extends Controller
 {
@@ -15,9 +17,10 @@ class TheoryControler extends Controller
         try {
             $theOryCategory = TheOryCategory::with(['theories.quizzes.questions'])->get();
             $response = [];
+            $member_id = Auth::id();
 
             foreach ($theOryCategory as $key => $item) {
-                $theories = $item->theories->map(function ($theory) use ($item) {
+                $theories = $item->theories->map(function ($theory) use ($item, $member_id) {
                     $quiz = $theory->quizzes->first(function ($quiz) use ($item, $theory) {
                         return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
                     });
@@ -28,6 +31,10 @@ class TheoryControler extends Controller
                     ];
 
                     if ($quiz) {
+                        $hasAttempted = QuizMember::where('member_id', $member_id)
+                            ->where('quiz_id', $quiz->id)
+                            ->exists();
+
                         $theoryData['quiz'] = [
                             'id' => $quiz->id,
                             'name' => $quiz->name,
@@ -35,6 +42,7 @@ class TheoryControler extends Controller
                             'time' => $quiz->time,
                             'pointAward' => $quiz->pointAward,
                             'question_count' => $quiz->questions->count(),
+                            'has_attempted' => $hasAttempted
                         ];
                     }
 
@@ -65,7 +73,6 @@ class TheoryControler extends Controller
     {
         try {
             $friendlyUrl = $request->route('friendly_url');
-
             $theory = TheOry::where('friendly_url', $friendlyUrl)
                 ->with(['quizzes' => function ($query) {
                     $query->select('id', 'theory_id', 'title', 'friendly_url', 'time', 'pointAward')
