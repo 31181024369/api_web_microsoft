@@ -76,8 +76,15 @@ class ResultExamsController extends Controller
     {
         try{
             $QuizMember=QuizMember::where('id',$id)->first();
-            $History=History::where('member_id',$QuizMember->member_id)
+
+            $History=History::with('member','quiz')->where('member_id',$QuizMember->member_id)
             ->where('quiz_id',$QuizMember->quiz_id)->where('times',$QuizMember->times)->first();
+            return $History;
+            return response()->json([
+                'status'=>true,
+                'data'=>$History
+            ]);
+
 
 
         }catch (\Exception $error) {
