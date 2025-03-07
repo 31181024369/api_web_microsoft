@@ -76,6 +76,13 @@ class QuizController extends Controller
     public function store(Request $request)
     {
         try {
+            $existingQuiz = Quiz::where('theory_id', $request->theory_id)->first();
+            if ($existingQuiz) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Quiz already exists'
+                ], 422);
+            }
             $disPath = public_path();
             $Quiz = new Quiz();
 
