@@ -15,6 +15,34 @@ class TheoryControler extends Controller
             $response = [];
 
             foreach ($theOryCategory as $key => $item) {
+                $theories = $item->theories->map(function ($theory) use ($item) {
+                    $quizzes = $theory->quizzes->filter(function ($quiz) use ($item, $theory) {
+                        return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
+                    })->map(function ($quiz) {
+                        return [
+                            'id' => $quiz->id,
+                            'title' => $quiz->title,
+                            'time' => $quiz->time,
+                            "friendly_url" => $quiz->friendly_url,
+                            'pointAward' => $quiz->pointAward,
+                            'question_count' => $quiz->questions->count(),
+                        ];
+                    });
+
+                    return [
+                        'id' => $theory->theory_id,
+                        'title' => $theory->title,
+                        'quizzes' => $quizzes,
+                    ];
+                });
+
+                if ($theories->isNotEmpty()) {
+                    $response[] = [
+                        'id' => $item->cat_id,
+                        'title' => $item->title,
+                        'theories' => $theories,
+                    ];
+                }
                 $response[] = [
                     'id' => $item->cat_id,
                     'title' => $item->title,
