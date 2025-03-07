@@ -77,6 +77,13 @@ class QuizController extends Controller
 
                 $times = $checkTimes->times + 1;
             }
+            if(count($Question)!=count($data['answers'])){
+                return response()->json([
+                    'status'=>false,
+                    "success" => "unfinished",
+                    'message'=>"Bạn chưa hoàn thành tất cả các câu hỏi! Vui lòng kiểm tra lại trước khi nộp bài."
+                ]);
+            }
 
 
             foreach ($data['answers'] as $item) {
@@ -84,6 +91,7 @@ class QuizController extends Controller
 
                 $quizMemberAnswerId = DB::table('quiz_member_answer')->insertGetId([
                     'member_id' => $member->id,
+
                     'quiz_id' => $data['quizId'] ?? '',
                     'question_id' => $item['question_id'] ?? '',
                     'user_answers' => $string ?? '',
@@ -125,7 +133,7 @@ class QuizController extends Controller
                 'quiz_id'=>$data['quizId']??'',
                 'is_finish' =>  $point>=0.8?1:0,
                 'times' => $times,
-                'time_statrt'=>$data['startTime'],
+                'time_start'=>$data['startTime'],
                 'time_end'=>$data['endTime']
             ]);
 
@@ -141,8 +149,13 @@ class QuizController extends Controller
 
             return response()->json([
                 'status' => true,
-                // 'total' => count($Question),
-                // 'result' => $result,
+                'data' => [
+                    'total' => count($Question),
+                    'result' => $result,
+                    'is_finish' =>  $point>=0.8?1:0,
+                    'percent'=>round($point*100),
+                ],
+                "success" => "done",
                 // 'times' => $times
             ]);
         } catch (\Exception $e) {

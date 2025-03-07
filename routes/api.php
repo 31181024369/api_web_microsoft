@@ -13,8 +13,10 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
 
     Route::post('update-infor-admin', [App\Http\Controllers\Admin\LoginAdminController::class, 'uploadInformation']);
     Route::resource('member', App\Http\Controllers\Admin\MemberController::class);
+    Route::post('delete-all-member',[App\Http\Controllers\Admin\MemberController::class,'deleteAllMember']);
 
     Route::resource('quiz', App\Http\Controllers\Admin\QuizController::class);
+    Route::resource('result-exams', App\Http\Controllers\Admin\ResultExamsController::class);
 });
 Route::group(['prefix' => 'member'], function () {
     Route::get('/show-quiz', [App\Http\Controllers\Member\QuizController::class, 'showQuiz']);
