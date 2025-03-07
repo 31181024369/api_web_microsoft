@@ -116,7 +116,7 @@
                                                                                                     style="color: inherit; font-size: inherit; line-height: inherit;"
                                                                                                     data-hs-cos-general-type="widget"
                                                                                                     data-hs-cos-type="custom_widget">
-                                                                                                    <table
+                                                                                                    {{-- <table
                                                                                                         style="-webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; mso-table-lspace:0pt; mso-table-rspace:0pt; border-collapse:collapse !important; background-color:#f2f2eb; width:100%"
                                                                                                         bgcolor="#f2f2eb">
                                                                                                         <tbody>
@@ -157,7 +157,7 @@
                                                                                                                 </td>
                                                                                                             </tr>
                                                                                                         </tbody>
-                                                                                                    </table>
+                                                                                                    </table> --}}
                                                                                                 </div>
                                                                                             </div>
                                                                                             <!--end layout-widget-wrapper -->

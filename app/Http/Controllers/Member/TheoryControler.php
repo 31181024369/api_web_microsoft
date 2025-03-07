@@ -22,18 +22,25 @@ class TheoryControler extends Controller
                         return [
                             'id' => $quiz->id,
                             'title' => $quiz->title,
+                            'friendly_url' => $quiz->friendly_url,
                             'time' => $quiz->time,
-                            "friendly_url" => $quiz->friendly_url,
                             'pointAward' => $quiz->pointAward,
                             'question_count' => $quiz->questions->count(),
                         ];
                     });
 
-                    return [
+                    $theoryData = [
                         'id' => $theory->theory_id,
                         'title' => $theory->title,
-                        'quizzes' => $quizzes,
                     ];
+
+                    if ($quizzes->isNotEmpty()) {
+                        $theoryData['quizzes'] = $quizzes;
+                    }
+
+                    return $theoryData;
+                })->filter(function ($theory) {
+                    return isset($theory['quizzes']);
                 });
 
                 if ($theories->isNotEmpty()) {
@@ -43,28 +50,6 @@ class TheoryControler extends Controller
                         'theories' => $theories,
                     ];
                 }
-                $response[] = [
-                    'id' => $item->cat_id,
-                    'title' => $item->title,
-                    'theories' => $item->theories->map(function ($theory) use ($item) {
-                        return [
-                            'id' => $theory->theory_id,
-                            'title' => $theory->title,
-                            'quizzes' => $theory->quizzes->filter(function ($quiz) use ($item, $theory) {
-                                return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
-                            })->map(function ($quiz) {
-                                return [
-                                    'id' => $quiz->id,
-                                    'title' => $quiz->name,
-                                    'time' => $quiz->time,
-                                    'pointAward' => $quiz->pointAward,
-                                    'friendly_url' => $quiz->friendly_url,
-                                    'question_count' => $quiz->questions->count(),
-                                ];
-                            }),
-                        ];
-                    }),
-                ];
             }
 
             return response()->json(['status' => true, 'list' => $response], 200);
@@ -79,14 +64,11 @@ class TheoryControler extends Controller
         }
     }
 
-
     public function create() {}
-
 
     public function store(Request $request) {}
 
     public function show(string $id) {}
-
 
     public function edit(string $id) {}
 

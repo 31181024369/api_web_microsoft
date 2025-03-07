@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Member;
 use App\Mail\Notification;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 class MemberController extends Controller
 {
     /**
@@ -91,17 +92,19 @@ class MemberController extends Controller
     public function update(Request $request, string $id)
     {
         try{
+
             $date=Carbon::now('Asia/Ho_Chi_Minh')->isoFormat('DD/MM/YYYY');
             $member=Member::where('id',$id)->first();
-            $member -> email = $request->email;
-            $member -> full_name = $request->fullname;
-            $member -> phone = $request->phone;
-            $member ->nameCompany=$request->nameCompany;
-            $member -> tax = $request->tax;
-            $member ->m_status = $request->m_status;
+            $member -> email = $request->email??$member->email;
+            $member -> full_name = $request->fullname??$member->full_name;
+            $member -> phone = $request->phone??$member->phone;
+            $member ->nameCompany=$request->nameCompany??$member->nameCompany;
+            $member -> tax = $request->tax??$member->tax;
+            $member ->m_status = $request->m_status??$member->m_status;
             $member->save();
             if($request->m_status==1){
-                $to = $listMember -> email;
+                $to = $member -> email;
+
                 $data = [
                     'subject' => 'Tài Khoản Của Bạn Đã Được Kích Hoạt',
                     'body' => '
@@ -121,6 +124,9 @@ class MemberController extends Controller
                 ->send(new Notification($data));
 
             }
+            return response()->json([
+                'status'=> true,
+            ]);
 
         }catch (\Exception $error) {
 
