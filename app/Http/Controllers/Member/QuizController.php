@@ -31,11 +31,24 @@ class QuizController extends Controller
     public function showDetailQuiz($slug)
     {
         try {
-            $Quiz = Quiz::with('Question.AnswerUser')->where('friendly_url', $slug)->first();
-            return response()->json([
-                'status' => true,
-                'data' => $Quiz
-            ]);
+            $Quiz = Quiz::where('friendly_url', $slug)->first();
+            $Question= $Question = Question::with('AnswerUser')->where("quiz_id",$Quiz->id)->paginate(10);
+            if($Quiz){
+                return response()->json([
+                    'status' => true,
+                    'data' => [
+                        'quiz' => $Quiz,
+                        'questions'=>$Question
+                    ]
+
+                ]);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'data' =>null
+                ]);
+            }
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -106,13 +119,15 @@ class QuizController extends Controller
                     }
                 }
             }
-            // $quiz_member=DB::table('quiz_member')->insert([
-            //     'member_id' => $member->id,
-            //     'quiz_id'=>$data['quizId']??'',
-            //     'is_finish' =>  1,
-            //     'time_start'=> $result,
-            //     'time_end'=>$times
-            // ]);
+            $point=$result/count($Question);
+            $quiz_member=DB::table('quiz_member')->insert([
+                'member_id' => $member->id,
+                'quiz_id'=>$data['quizId']??'',
+                'is_finish' =>  $point>=0.8?1:0,
+                'times' => $times,
+                'time_statrt'=>$data['startTime'],
+                'time_end'=>$data['endTime']
+            ]);
 
 
             $history = DB::table('history')->insert([
@@ -126,9 +141,9 @@ class QuizController extends Controller
 
             return response()->json([
                 'status' => true,
-                'total' => count($Question),
-                'result' => $result,
-                'times' => $times
+                // 'total' => count($Question),
+                // 'result' => $result,
+                // 'times' => $times
             ]);
         } catch (\Exception $e) {
             return response()->json([
