@@ -74,18 +74,21 @@ class MemberController extends Controller
                     'tax' => $tax
                 ]);
                 $data = [
-                    'subject' => 'Tài Khoản Của Bạn Đã Được Kích Hoạt',
+                    'subject' => ' Đăng Ký Tài Khoản Thành Công – Vui Lòng Chờ Duyệt',
                     'body' => '
                     Kính gửi '. $member -> full_name .'<br>
-                    Chúc mừng! Tài khoản Microsoft của bạn đã được kích hoạt thành công.
-                    Bạn có thể bắt đầu sử dụng các dịch vụ của chúng tôi ngay bây giờ.<br>
+                    Chúng tôi xin thông báo rằng bạn đã đăng ký tài khoản thành công trên Microsoft.
+                     Tuy nhiên, tài khoản của bạn cần được xét duyệt trước khi có thể sử dụng.<br>
                     Dưới đây là thông tin tài khoản của Quý Khách:<br>
                     Tên đăng nhập: '.$member -> username.'<br>
                     Tên doanh nghiệp:'. $member ->nameCompany.'<br>
                     Mã số thuế:'.$member -> tax.'<br>
                     Thời gian đăng kí: '.$date.'<br>
-                    Nếu bạn không yêu cầu kích hoạt tài khoản này, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi để được
-                    trợ giúp.Trân trọng, <br>
+                    Chúng tôi sẽ xem xét và duyệt tài khoản của bạn trong thời gian sớm nhất. Bạn sẽ nhận được thông báo ngay khi
+                     tài khoản được kích hoạt.<br>
+                    Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.
+
+Trân trọng.<br>
                     Đội ngũ Microsoft<br>'
                 ];
                 Mail::to($to)
