@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Quiz;
 use Illuminate\Support\Facades\DB;
+
 class QuizController extends Controller
 {
     /**
@@ -13,23 +14,22 @@ class QuizController extends Controller
      */
     public function index(Request $request)
     {
-        try{
-            $query=Quiz::query();
-            if(!empty($request->input('data'))&& $request->input('data') !== 'null'&& $request->input('data') !== 'undefined'){
-                $query=$query->where("name", 'like', '%' . $request->input('data') . '%');
+        try {
+            $query = Quiz::query();
+            if (!empty($request->input('data')) && $request->input('data') !== 'null' && $request->input('data') !== 'undefined') {
+                $query = $query->where("name", 'like', '%' . $request->input('data') . '%');
             }
-            if(!empty($request->input('cat_id'))&& $request->input('cat_id') !== 'null'&& $request->input('cat_id') !== 'undefined'){
-                $query=$query->where("cat_id",$request->input('cat_id'));
+            if (!empty($request->input('cat_id')) && $request->input('cat_id') !== 'null' && $request->input('cat_id') !== 'undefined') {
+                $query = $query->where("cat_id", $request->input('cat_id'));
             }
 
 
-            $query= $query->orderBy('id','desc')->paginate(10);
+            $query = $query->orderBy('id', 'desc')->paginate(10);
             return response()->json([
-                'status'=>true,
-                'data'=>$query
+                'status' => true,
+                'data' => $query
             ]);
-
-        }catch (\Exception $error) {
+        } catch (\Exception $error) {
 
             return response()->json([
                 'status_code' => 500,
@@ -52,64 +52,62 @@ class QuizController extends Controller
      */
     public function store(Request $request)
     {
-        try{
+        try {
             $disPath = public_path();
-            $Quiz=new Quiz();
+            $Quiz = new Quiz();
 
             $filePath = '';
-            if ( $request->selectedFile != null )
-            {
-                $DIR = $disPath.'\uploads\quiz';
-                $httpPost = file_get_contents( 'php://input' );
-                $file_chunks = explode( ';base64,', $request->selectedFile[ 0 ] );
-                $fileType = explode( 'image/', $file_chunks[ 0 ] );
-                $image_type = $fileType[ 0 ];
+            if ($request->selectedFile != null) {
+                $DIR = $disPath . '\uploads\quiz';
+                $httpPost = file_get_contents('php://input');
+                $file_chunks = explode(';base64,', $request->selectedFile[0]);
+                $fileType = explode('image/', $file_chunks[0]);
+                $image_type = $fileType[0];
                 //return response()->json( $file_chunks );
-                $base64Img = base64_decode( $file_chunks[ 1 ] );
-                $data = iconv( 'latin5', 'utf-8', $base64Img );
+                $base64Img = base64_decode($file_chunks[1]);
+                $data = iconv('latin5', 'utf-8', $base64Img);
                 $name = uniqid();
-                $file = $DIR .'\\'. $name . '.png';
-                $filePath = 'quiz/'.$name . '.png';
-                file_put_contents( $file,  $base64Img );
+                $file = $DIR . '\\' . $name . '.png';
+                $filePath = 'quiz/' . $name . '.png';
+                file_put_contents($file,  $base64Img);
             }
-            $Quiz->name=$request->title;
+            $Quiz->name = $request->title;
             // $Quiz->description=$request->description??'';
-            $Quiz->pointAward=$request->pointAward??'';
-            $Quiz->picture=$filePath;
-            $Quiz->cat_id=$request->cat_id;
-            $Quiz->theory_id=$request->theory_id;
-            $Quiz->time=$request->duration??0;
-            $Quiz->display=$request->visible??0;
-            $Quiz->friendly_url=$request->friendlyUrl;
-            $Quiz->friendly_title=$request->pageTitle;
-            $Quiz->metakey=$request->metaKeyword;
-            $Quiz->metadesc=$request->metaDesc;
+            $Quiz->pointAward = $request->pointAward ?? '';
+            $Quiz->picture = $filePath;
+            $Quiz->cat_id = $request->cat_id;
+            $Quiz->theory_id = $request->theory_id;
+            $Quiz->time = $request->duration ?? 0;
+            $Quiz->display = $request->visible ?? 0;
+            $Quiz->friendly_url = $request->friendlyUrl;
+            $Quiz->friendly_title = $request->pageTitle;
+            $Quiz->metakey = $request->metaKeyword;
+            $Quiz->metadesc = $request->metaDesc;
             $Quiz->save();
-            foreach($request->questions as $questions){
+            foreach ($request->questions as $questions) {
 
-                $questionId =DB::table('quiz_question')->insertGetId([
+                $questionId = DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
                     'description' =>  $questions['question_text'],
                     // 'image'=>$questions->image??'',
                 ]);
 
-                foreach($questions['answers'] as $answers){
+                foreach ($questions['answers'] as $answers) {
                     //quiz_answer
                     DB::table('quiz_answer')->insert([
                         'question_id' => $questionId,
-                        'letter'=>$answers['option_letter']??'',
-                        'description' =>  $answers['option_text']??'',
-                        'correct_answer'=>$answers['is_correct']??'',
+                        'letter' => $answers['option_letter'] ?? '',
+                        'description' =>  $answers['option_text'] ?? '',
+                        'correct_answer' => $answers['is_correct'] ?? '',
                     ]);
-
                 }
             }
 
             return response()->json([
-                'status'=>true,
-                'data'=>$Quiz
+                'status' => true,
+                'data' => $Quiz
             ]);
-        }catch (\Exception $error) {
+        } catch (\Exception $error) {
 
             return response()->json([
                 'status_code' => 500,
@@ -132,13 +130,13 @@ class QuizController extends Controller
      */
     public function edit(string $id)
     {
-        try{
-            $Quiz=Quiz::with('Question.Answer')->where('id',$id)->first();
+        try {
+            $Quiz = Quiz::with('Question.Answer')->where('id', $id)->first();
             return response()->json([
-                'status'=>true,
-                'data'=>$Quiz
+                'status' => true,
+                'data' => $Quiz
             ]);
-        }catch (\Exception $error) {
+        } catch (\Exception $error) {
 
             return response()->json([
                 'status_code' => 500,
@@ -153,8 +151,8 @@ class QuizController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        try{
-            $Quiz=Quiz::where('id',$id)->first();
+        try {
+            $Quiz = Quiz::where('id', $id)->first();
             if (!$Quiz) {
                 return response()->json([
                     'status' => false,
@@ -163,72 +161,68 @@ class QuizController extends Controller
             }
 
             $filePath = '';
-            if ( $request->selectedFile != null && $request->selectedFile != $Quiz->picture )
-            {
+            if ($request->selectedFile != null && $request->selectedFile != $Quiz->picture) {
 
-                $DIR = $disPath.'\uploads\quiz';
-                $httpPost = file_get_contents( 'php://input' );
-                $file_chunks = explode( ';base64,', $request->selectedFile[ 0 ] );
-                $fileType = explode( 'image/', $file_chunks[ 0 ] );
-                $image_type = $fileType[ 0 ];
+                $DIR = $disPath . '\uploads\quiz';
+                $httpPost = file_get_contents('php://input');
+                $file_chunks = explode(';base64,', $request->selectedFile[0]);
+                $fileType = explode('image/', $file_chunks[0]);
+                $image_type = $fileType[0];
 
                 //return response()->json( $file_chunks );
-                $base64Img = base64_decode( $file_chunks[ 1 ] );
-                $data = iconv( 'latin5', 'utf-8', $base64Img );
+                $base64Img = base64_decode($file_chunks[1]);
+                $data = iconv('latin5', 'utf-8', $base64Img);
                 $name = uniqid();
-                $file = $DIR .'\\'. $name . '.png';
-                $filePath = 'quiz/'.$name . '.png';
+                $file = $DIR . '\\' . $name . '.png';
+                $filePath = 'quiz/' . $name . '.png';
 
-                file_put_contents( $file,  $base64Img );
+                file_put_contents($file,  $base64Img);
             } else {
                 $filePath = $Quiz->picture;
             }
 
-            $Quiz->name=$request->title;
-            $Quiz->picture=$filePath;
-            $Quiz->cat_id=$request->cat_id;
-            $Quiz->theory_id=$request->theory_id;
-            $Quiz->pointAward=$request->pointAward??'';
-            $Quiz->time=$request->duration??0;
-            $Quiz->display=$request->visible??0;
-            $Quiz->friendly_url=$request->friendlyUrl;
-            $Quiz->friendly_title=$request->pageTitle;
-            $Quiz->metakey=$request->metaKeyword;
-            $Quiz->metadesc=$request->metaDesc;
+            $Quiz->name = $request->title;
+            $Quiz->picture = $filePath;
+            $Quiz->cat_id = $request->cat_id;
+            $Quiz->theory_id = $request->theory_id;
+            $Quiz->pointAward = $request->pointAward ?? '';
+            $Quiz->time = $request->duration ?? 0;
+            $Quiz->display = $request->visible ?? 0;
+            $Quiz->friendly_url = $request->friendlyUrl;
+            $Quiz->friendly_title = $request->pageTitle;
+            $Quiz->metakey = $request->metaKeyword;
+            $Quiz->metadesc = $request->metaDesc;
             $Quiz->save();
 
 
-            $question =DB::table('quiz_question')->where('quiz_id',$Quiz->id)->first();
-            $answerId=DB::table('quiz_answer')->where('question_id',$question->id)->first();
-            if($answerId){
-                DB::table('quiz_answer')->where('question_id',$question->id)->delete();
+            $question = DB::table('quiz_question')->where('quiz_id', $Quiz->id)->first();
+            $answerId = DB::table('quiz_answer')->where('question_id', $question->id)->first();
+            if ($answerId) {
+                DB::table('quiz_answer')->where('question_id', $question->id)->delete();
             }
-            if($question){
-                DB::table('quiz_question')->where('quiz_id',$Quiz->id)->delete();
+            if ($question) {
+                DB::table('quiz_question')->where('quiz_id', $Quiz->id)->delete();
             }
-            foreach($request->questions as $questions){
-                $questionId =DB::table('quiz_question')->insertGetId([
+            foreach ($request->questions as $questions) {
+                $questionId = DB::table('quiz_question')->insertGetId([
                     'quiz_id' => $Quiz->id,
                     'description' =>  $questions['question_text'],
                     // 'image'=>$questions->image??'',
                 ]);
-                foreach($questions['answers'] as $answers){
+                foreach ($questions['answers'] as $answers) {
                     //quiz_answer
                     DB::table('quiz_answer')->insert([
                         'question_id' => $questionId,
-                        'letter'=>$answers['option_letter']??'',
-                        'description' =>  $answers['option_text']??'',
-                        'correct_answer'=>$answers['is_correct']??'',
+                        'letter' => $answers['option_letter'] ?? '',
+                        'description' =>  $answers['option_text'] ?? '',
+                        'correct_answer' => $answers['is_correct'] ?? '',
                     ]);
-
                 }
             }
             return response()->json([
-                'status'=>true,
+                'status' => true,
             ]);
-
-
-        }catch (\Exception $error) {
+        } catch (\Exception $error) {
 
             return response()->json([
                 'status_code' => 500,
@@ -243,31 +237,30 @@ class QuizController extends Controller
      */
     public function destroy(string $id)
     {
-        try{
-            $Quiz=Quiz::where('id',$id)->first();
+        try {
+            $Quiz = Quiz::where('id', $id)->first();
             if (!$Quiz) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Quiz not found'
                 ], 404);
             }
-            $question =DB::table('quiz_question')->where('quiz_id',$Quiz->id)->first();
-            $answerId=DB::table('quiz_answer')->where('question_id',$question->id)->first();
-            if($Quiz){
+            $question = DB::table('quiz_question')->where('quiz_id', $Quiz->id)->first();
+            $answerId = DB::table('quiz_answer')->where('question_id', $question->id)->first();
+            if ($Quiz) {
 
-                if($answerId){
-                    DB::table('quiz_answer')->where('question_id',$question->id)->delete();
+                if ($answerId) {
+                    DB::table('quiz_answer')->where('question_id', $question->id)->delete();
                 }
-                if($question){
-                    DB::table('quiz_question')->where('quiz_id',$Quiz->id)->delete();
+                if ($question) {
+                    DB::table('quiz_question')->where('quiz_id', $Quiz->id)->delete();
                 }
                 $Quiz->delete();
-
             }
             return response()->json([
-                'status'=>true
+                'status' => true
             ]);
-        }catch (\Exception $error) {
+        } catch (\Exception $error) {
 
             return response()->json([
                 'status_code' => 500,
