@@ -27,6 +27,7 @@ class TheoryControler extends Controller
                     $theoryData = [
                         'id' => $theory->theory_id,
                         'title' => $theory->title,
+                        'friendly_url' => $theory->friendly_url,
                     ];
 
                     if ($quiz) {
