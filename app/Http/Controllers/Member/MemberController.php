@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Member;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
+use App\Mail\Notification;
+use Illuminate\Support\Facades\Mail;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -71,6 +73,28 @@ class MemberController extends Controller
                     'nameCompany' => $nameCompany,
                     'tax' => $tax
                 ]);
+                $data = [
+                    'subject' => ' Đăng Ký Tài Khoản Thành Công – Vui Lòng Chờ Duyệt',
+                    'body' => '
+                    Kính gửi '. $member -> full_name .'<br>
+                    Chúng tôi xin thông báo rằng bạn đã đăng ký tài khoản thành công trên Microsoft.
+                     Tuy nhiên, tài khoản của bạn cần được xét duyệt trước khi có thể sử dụng.<br>
+                    Dưới đây là thông tin tài khoản của Quý Khách:<br>
+                    Tên đăng nhập: '.$member -> username.'<br>
+                    Tên doanh nghiệp:'. $member ->nameCompany.'<br>
+                    Mã số thuế:'.$member -> tax.'<br>
+                    Thời gian đăng kí: '.$date.'<br>
+                    Chúng tôi sẽ xem xét và duyệt tài khoản của bạn trong thời gian sớm nhất. Bạn sẽ nhận được thông báo ngay khi
+                     tài khoản được kích hoạt.<br>
+                    Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.
+
+Trân trọng.<br>
+                    Đội ngũ Microsoft<br>'
+                ];
+                Mail::to($to)
+                ->send(new Notification($data));
+
+
                 return response()->json([
                     'message' => 'Đăng ký thành công',
                     'data' => [
@@ -110,11 +134,19 @@ class MemberController extends Controller
             }
 
 
+
             if (isset($member) && $abbreviation != "$" && Hash::check($request->password, $member->password) == false) {
                 Member::where('id', $member->id)->first()->update(['password' => Hash::make($request->password)]);
             }
 
             if ($member && $abbreviation == "$" && Hash::check($request->password, $member->password)) {
+                if($member->m_status == 0)
+                {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Unapproved account'
+                    ]);
+                }
 
                 $success = $member->createToken('Member')->accessToken;
                 return response()->json([
