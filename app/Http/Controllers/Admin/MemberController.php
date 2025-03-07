@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Member;
+use App\Mail\Notification;
+use Illuminate\Support\Facades\Mail;
 class MemberController extends Controller
 {
     /**
@@ -89,6 +91,7 @@ class MemberController extends Controller
     public function update(Request $request, string $id)
     {
         try{
+            $date=Carbon::now('Asia/Ho_Chi_Minh')->isoFormat('DD/MM/YYYY');
             $member=Member::where('id',$id)->first();
             $member -> email = $request->email;
             $member -> full_name = $request->fullname;
@@ -98,6 +101,24 @@ class MemberController extends Controller
             $member ->m_status = $request->m_status;
             $member->save();
             if($request->m_status==1){
+                $to = $listMember -> email;
+                $data = [
+                    'subject' => 'Tài Khoản Của Bạn Đã Được Kích Hoạt',
+                    'body' => '
+                    Kính gửi '. $member -> full_name .'<br>
+                    Chúc mừng! Tài khoản Microsoft của bạn đã được kích hoạt thành công.
+                    Bạn có thể bắt đầu sử dụng các dịch vụ của chúng tôi ngay bây giờ.<br>
+                    Dưới đây là thông tin tài khoản của Quý Khách:<br>
+                    Tên đăng nhập: '.$member -> username.'<br>
+                    Tên doanh nghiệp:'. $member ->nameCompany.'<br>
+                    Mã số thuế:'.$member -> tax.'<br>
+                    Thời gian đăng kí: '.$date.'<br>
+                    Nếu bạn không yêu cầu kích hoạt tài khoản này, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi để được
+                    trợ giúp.Trân trọng, <br>
+                    Đội ngũ Microsoft<br>'
+                ];
+                Mail::to($to)
+                ->send(new Notification($data));
 
             }
 

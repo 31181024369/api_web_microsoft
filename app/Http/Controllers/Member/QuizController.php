@@ -31,11 +31,22 @@ class QuizController extends Controller
     public function showDetailQuiz($slug)
     {
         try {
-            $Quiz = Quiz::with('Question.AnswerUser')->where('friendly_url', $slug)->first();
-            return response()->json([
-                'status' => true,
-                'data' => $Quiz
-            ]);
+            $Quiz = Quiz::where('friendly_url', $slug)->first();
+            $Question= $Question = Question::with('AnswerUser')->where("quiz_id",$Quiz->id)->paginate(10);
+            if($Quiz){
+                return response()->json([
+                    'status' => true,
+                    'Quiz' => $Quiz,
+                    'Questions'=>$Question
+
+                ]);
+            }else{
+                return response()->json([
+                    'status' => false,
+                    'data' =>null
+                ]);
+            }
+
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
