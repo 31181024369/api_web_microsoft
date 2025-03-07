@@ -31,6 +31,7 @@ Route::group(['prefix' => 'member'], function () {
 //Theory Category
 Route::resource('theory-category', App\Http\Controllers\Admin\TheOryCategoryController::class);
 Route::delete('theory-categorys/delete', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'delete']);
+Route::get('theory-categories/show', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'showTheoryCategory']);
 
 // Theory
 Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
