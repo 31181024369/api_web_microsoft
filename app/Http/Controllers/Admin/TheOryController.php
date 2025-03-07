@@ -86,7 +86,7 @@ class TheOryController extends Controller
                 $imageData = is_array($validatedData['picture']) ? $validatedData['picture'][0] : $validatedData['picture'];
 
                 if (is_string($imageData)) {
-                    $filePath = $this->saveBase64Image($imageData, 'upload/theory');
+                    $filePath = $this->saveBase64Image($imageData, 'uploads/theory');
                 }
             }
 
@@ -159,7 +159,7 @@ class TheOryController extends Controller
                 $imageData = is_array($validatedData['picture']) ? $validatedData['picture'][0] : $validatedData['picture'];
 
                 if (is_string($imageData)) {
-                    $filePath = $this->saveBase64Image($imageData, 'upload/theory');
+                    $filePath = $this->saveBase64Image($imageData, 'uploads/theory');
                 }
             }
 

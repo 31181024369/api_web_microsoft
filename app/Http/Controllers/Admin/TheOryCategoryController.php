@@ -207,9 +207,9 @@ class TheOryCategoryController extends Controller
                             'theory_id' => $theory->theory_id,
                             'title' => $theory->title,
                         ];
-                    }),
+                    })->values(),
                 ];
-            });
+            })->values();
 
             return response()->json([
                 'status' => true,

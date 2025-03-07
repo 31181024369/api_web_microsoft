@@ -11,7 +11,7 @@ class Question extends Model
     protected $table = 'quiz_question';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'description', 'image', 'quiz_id'
+        'description', 'image', 'quiz_id','question_type'
     ];
     public function quiz()
     {
