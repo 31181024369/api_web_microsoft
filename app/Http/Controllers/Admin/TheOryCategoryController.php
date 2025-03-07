@@ -190,4 +190,36 @@ class TheOryCategoryController extends Controller
             ], 500);
         }
     }
+
+    public function showTheoryCategory()
+    {
+        try {
+            $theOryCategory = TheOryCategory::with('theories:theory_id,cat_id,title')->select('cat_id', 'title')->get();
+
+            $response = $theOryCategory->filter(function ($category) {
+                return $category->theories->isNotEmpty();
+            })->map(function ($category) {
+                return [
+                    'cat_id' => $category->cat_id,
+                    'title' => $category->title,
+                    'theories' => $category->theories->map(function ($theory) {
+                        return [
+                            'theory_id' => $theory->theory_id,
+                            'title' => $theory->title,
+                        ];
+                    }),
+                ];
+            });
+
+            return response()->json([
+                'status' => true,
+                'data' => $response
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

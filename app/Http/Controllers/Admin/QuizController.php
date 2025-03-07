@@ -132,6 +132,7 @@ class QuizController extends Controller
     {
         try {
             $Quiz = Quiz::with('Question.Answer')->where('id', $id)->first();
+
             return response()->json([
                 'status' => true,
                 'data' => $Quiz

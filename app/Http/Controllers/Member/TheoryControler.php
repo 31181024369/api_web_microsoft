@@ -22,17 +22,25 @@ class TheoryControler extends Controller
                         return [
                             'id' => $quiz->id,
                             'title' => $quiz->title,
+                            'friendly_url' => $quiz->friendly_url,
                             'time' => $quiz->time,
                             'pointAward' => $quiz->pointAward,
                             'question_count' => $quiz->questions->count(),
                         ];
                     });
 
-                    return [
+                    $theoryData = [
                         'id' => $theory->theory_id,
                         'title' => $theory->title,
-                        'quizzes' => $quizzes,
                     ];
+
+                    if ($quizzes->isNotEmpty()) {
+                        $theoryData['quizzes'] = $quizzes;
+                    }
+
+                    return $theoryData;
+                })->filter(function ($theory) {
+                    return isset($theory['quizzes']);
                 });
 
                 if ($theories->isNotEmpty()) {
@@ -56,14 +64,11 @@ class TheoryControler extends Controller
         }
     }
 
-
     public function create() {}
-
 
     public function store(Request $request) {}
 
     public function show(string $id) {}
-
 
     public function edit(string $id) {}
 
