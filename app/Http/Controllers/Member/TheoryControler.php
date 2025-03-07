@@ -28,20 +28,25 @@ class TheoryControler extends Controller
                         ];
                     });
 
-                    return [
+                    $theoryData = [
                         'id' => $theory->theory_id,
                         'title' => $theory->title,
-                        'quizzes' => $quizzes,
                     ];
+
+                    if ($quizzes->isNotEmpty()) {
+                        $theoryData['quizzes'] = $quizzes;
+                    }
+
+                    return $theoryData;
                 });
 
-                if ($theories->isNotEmpty()) {
-                    $response[] = [
-                        'id' => $item->cat_id,
-                        'title' => $item->title,
-                        'theories' => $theories,
-                    ];
-                }
+                $response[] = [
+                    'id' => $item->cat_id,
+                    'title' => $item->title,
+                    'theories' => $theories->filter(function ($theory) {
+                        return isset($theory['quizzes']);
+                    })->values(),
+                ];
             }
 
             return response()->json(['status' => true, 'list' => $response], 200);
@@ -56,14 +61,11 @@ class TheoryControler extends Controller
         }
     }
 
-
     public function create() {}
-
 
     public function store(Request $request) {}
 
     public function show(string $id) {}
-
 
     public function edit(string $id) {}
 
