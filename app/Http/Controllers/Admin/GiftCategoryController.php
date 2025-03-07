@@ -56,7 +56,7 @@ class GiftCategoryController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'reward_point' => 'required|integer',
-                'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'picture' => 'nullable',
                 'display' => 'required|boolean',
             ]);
 
@@ -66,19 +66,21 @@ class GiftCategoryController extends Controller
             $giftCategory->reward_point = $validatedData['reward_point'];
             $giftCategory->display = $validatedData['display'];
 
-            $filePath = '';
-            if ($request->hasFile('picture')) {
-                $file = $request->file('picture');
-                $fileName = uniqid() . '.' . $file->getClientOriginalExtension();
-                $filePath = 'uploads/gift/' . $fileName;
-                $file->move(public_path('uploads/gift'), $fileName);
+            $filePath = null;
+
+            if (!empty($validatedData['picture'])) {
+                $imageData = is_array($validatedData['picture']) ? $validatedData['picture'][0] : $validatedData['picture'];
+
+                if (is_string($imageData)) {
+                    $filePath = $this->saveBase64Image($imageData, 'uploads/gift-category');
+                }
             }
             $giftCategory->picture = $filePath;
             $giftCategory->save();
 
             return response()->json([
                 'status' => true,
-                'message' => 'Gift category created successfully',
+                'message' => 'success',
                 'data' => $giftCategory
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -94,35 +96,47 @@ class GiftCategoryController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
+
     public function show(string $id)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, string $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(string $id) {}
+
+    private function saveBase64Image($base64Image, $folderPath)
     {
-        //
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches)) {
+            $imageType = $matches[1];
+            $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
+            $base64Image = base64_decode($base64Image);
+
+            if ($base64Image === false) {
+                throw new \Exception('Invalid base64 image data');
+            }
+
+            $fileName = uniqid('image_') . '.' . $imageType;
+            $filePath = $folderPath . '/' . $fileName;
+
+            if (!file_exists(public_path($folderPath))) {
+                mkdir(public_path($folderPath), 0777, true);
+            }
+
+            file_put_contents(public_path($filePath), $base64Image);
+
+            return $filePath;
+        }
+
+        throw new \Exception('Invalid image format');
     }
 }

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('gift_categories', function (Blueprint $table) {
-            $table->id('gift_id');
+            $table->id('id');
             $table->string('title', 255);
             $table->text('description')->nullable();
             $table->integer('reward_point');
