@@ -36,8 +36,10 @@ class QuizController extends Controller
             if($Quiz){
                 return response()->json([
                     'status' => true,
-                    'Quiz' => $Quiz,
-                    'Questions'=>$Question
+                    'data' => [
+                        'quiz' => $Quiz,
+                        'questions'=>$Question
+                    ]
 
                 ]);
             }else{
