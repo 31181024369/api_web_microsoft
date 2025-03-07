@@ -13,6 +13,8 @@ class Member extends Authenticatable
     protected $table = 'members';
     protected $primaryKey = 'id';
     protected $fillable = [
-        'username','mem_code', 'email', 'password','address', 'company', 'full_name','provider','avatar','phone','status','m_status','ward','district','city_province','password_token','tax','nameCompany'
+        'username','mem_code', 'email', 'password','address', 'company',
+        'full_name','provider','avatar','phone','status','m_status','ward','district','city_province','password_token','tax',
+        'nameCompany','points','used_points','number_passes'
     ];
 }

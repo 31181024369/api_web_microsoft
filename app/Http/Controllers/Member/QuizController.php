@@ -124,8 +124,9 @@ class QuizController extends Controller
                 'member_id' => $member->id,
                 'quiz_id'=>$data['quizId']??'',
                 'is_finish' =>  $point>=0.8?1:0,
-                'time_start'=> $result,
-                'time_end'=>$times
+                'times' => $times,
+                'time_statrt'=>$data['startTime'],
+                'time_end'=>$data['endTime']
             ]);
 
 
@@ -140,9 +141,9 @@ class QuizController extends Controller
 
             return response()->json([
                 'status' => true,
-                'total' => count($Question),
-                'result' => $result,
-                'times' => $times
+                // 'total' => count($Question),
+                // 'result' => $result,
+                // 'times' => $times
             ]);
         } catch (\Exception $e) {
             return response()->json([

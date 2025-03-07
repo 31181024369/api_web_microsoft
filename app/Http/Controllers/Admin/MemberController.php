@@ -104,6 +104,9 @@ class MemberController extends Controller
             $member ->nameCompany=$request->nameCompany??$member->nameCompany;
             $member -> tax = $request->tax??$member->tax;
             $member ->m_status = $request->m_status??$member->m_status;
+            $member ->points = $request->points??$member->points;
+            $member ->used_points = $request->used_points??$member->used_points;
+            $member ->number_passes = $request->number_passes??$member->number_passes;
             $member->save();
             if($request->m_status==1){
                 $to = $member -> email;
