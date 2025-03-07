@@ -79,10 +79,19 @@ class ResultExamsController extends Controller
 
             $History=History::with('member','quiz')->where('member_id',$QuizMember->member_id)
             ->where('quiz_id',$QuizMember->quiz_id)->where('times',$QuizMember->times)->first();
-            return $History;
+            $data=[
+                'member'=>$History->member,
+                'quiz'=>$History->quiz,
+                'totalQuestions'=>$History->total_questions,
+                'totalCorrect'=>$History->total_correct,
+                'times'=>$History->times,
+                'isFinish'=>$QuizMember->is_finish,
+                'time_start'=>$QuizMember->time_start,
+                'time_end'=>$QuizMember->time_end,
+            ];
             return response()->json([
                 'status'=>true,
-                'data'=>$History
+                'data'=>$data
             ]);
 
 
