@@ -24,8 +24,6 @@ return new class extends Migration
             $table->string('width', 10)->nullable()->default('0');
             $table->string('height', 10)->default('0');
             $table->string('link', 150)->nullable()->default('NULL');
-
-            $table->string('module_show', 150)->default('');
             $table->text('description')->nullable();
             $table->tinyInteger('display')->length(4)->default('1');
 
