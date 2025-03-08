@@ -54,7 +54,7 @@ class TheoryControler extends Controller
                     return $theoryData;
                 })->filter(function ($theory) {
                     return isset($theory['quiz']);
-                })->values(); // Thêm values() ở đây
+                })->values();
 
                 if ($theories->isNotEmpty()) {
                     $response[] = [
@@ -125,5 +125,4 @@ class TheoryControler extends Controller
             ], 500);
         }
     }
-
 }

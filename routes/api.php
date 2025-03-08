@@ -32,7 +32,7 @@ Route::group(['prefix' => 'member'], function () {
     Route::resource('theory', App\Http\Controllers\Member\TheoryControler::class);
     Route::delete('theorys/delete', [App\Http\Controllers\Member\TheoryControler::class, 'delete']);
     Route::get('theorys/{friendly_url}', [App\Http\Controllers\Member\TheoryControler::class, 'shows']);
-
+    Route::get('get-newstheory', [App\Http\Controllers\Member\TheoryControler::class, 'take5theory']);
 
     Route::get('infor-member', [App\Http\Controllers\Member\MemberController::class, 'inforMember']);
 });
