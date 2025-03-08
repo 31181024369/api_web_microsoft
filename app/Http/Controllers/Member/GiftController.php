@@ -101,7 +101,7 @@ class GiftController extends Controller
 
                 return response()->json([
                     'status' => true,
-                    'message' => 'Đổi quà thành công',
+                    'message' => 'success',
                     'data' => [
                         'gift' => $gift->makeHidden(['created_at', 'updated_at']),
                         'points' => [
