@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Gift;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class GiftController extends Controller
 {
@@ -170,5 +171,58 @@ class GiftController extends Controller
             'status' => true,
             'message' => 'success'
         ], 200);
+    }
+
+    public function delete(Request $request)
+    {
+        try {
+            $ids = is_array($request->ids) ? $request->ids : [];
+            if (!empty($request->ids[0])) {
+                $ids = explode(',', $request->ids[0]);
+            }
+
+            $validator = Validator::make(['ids' => $ids], [
+                'ids' => 'required|array',
+                'ids.*' => 'integer'
+            ], [
+                'ids.required' => 'Vui lòng chọn ít nhất một quà tặng để xóa',
+                'ids.array' => 'Dữ liệu không đúng định dạng',
+                'ids.*.integer' => 'ID phải là số nguyên'
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Dữ liệu không hợp lệ',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $gifts = Gift::whereIn('id', $ids)->get();
+
+            if ($gifts->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không tìm thấy quà tặng nào để xóa'
+                ], 404);
+            }
+
+            foreach ($gifts as $gift) {
+                if ($gift->picture && file_exists(public_path($gift->picture))) {
+                    unlink(public_path($gift->picture));
+                }
+                $gift->delete();
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'success'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra khi xóa: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
