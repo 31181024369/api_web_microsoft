@@ -22,4 +22,8 @@ class Advertise extends Model
         'description',
         'display',
     ];
+    public function Adpos()
+    {
+        return $this->belongsTo(Adpos::class, 'id_pos','id');
+    }
 }

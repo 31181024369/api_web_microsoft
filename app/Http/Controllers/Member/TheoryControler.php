@@ -131,54 +131,60 @@ class TheoryControler extends Controller
         try {
             $member_id = Auth::guard('member')->id();
 
-            $theories = TheOry::with(['quizzes' => function ($query) {
+            // Fetch 5 most recent theories with their related quizzes and questions
+            $theories = Theory::with(['quizzes' => function ($query) {
                 $query->select('id', 'theory_id', 'name', 'friendly_url', 'time', 'pointAward')
-                    ->with('questions:id,quiz_id');
+                      ->with('questions:id,quiz_id');
             }])
-                ->select('theory_id', 'title', 'short_description', 'friendly_url', 'picture')
-                ->orderBy('theory_id', 'desc')
-                ->limit(5)
-                ->get();
+            ->select('theory_id', 'title', 'short_description', 'friendly_url', 'picture')
+            ->orderBy('theory_id', 'desc')
+            ->limit(5)
+            ->get();
 
-            $response = [
+            // Transform the data and filter out theories without quizzes
+            $data = $theories->map(function ($theory) use ($member_id) {
+                // Skip theories without quizzes
+                if ($theory->quizzes->isEmpty()) {
+                    return null;
+                }
+
+                $quiz = $theory->quizzes->first();
+
+                $hasAttempted = QuizMember::where([
+                    'member_id' => $member_id,
+                    'quiz_id' => $quiz->id
+                ])->exists();
+
+                $is_finish = QuizMember::where([
+                    'member_id' => $member_id,
+                    'quiz_id' => $quiz->id,
+                    'is_finish' => 1
+                ])->exists();
+
+                return [
+                    'id' => $theory->theory_id,
+                    'title' => $theory->title,
+                    'short_description' => $theory->short_description,
+                    'friendly_url' => $theory->friendly_url,
+                    'picture' => $theory->picture,
+                    'quiz' => [
+                        'id' => $quiz->id,
+                        'name' => $quiz->name,
+                        'friendly_url' => $quiz->friendly_url,
+                        'time' => $quiz->time,
+                        'pointAward' => $quiz->pointAward,
+                        'question_count' => $quiz->questions->count(),
+                        'has_attempted' => $hasAttempted,
+                        'is_finish' => $is_finish
+                    ]
+                ];
+            })->filter()->values(); // Remove null values and reindex the array
+
+            return response()->json([
                 'status' => true,
-                'data' => $theories->map(function ($theory) use ($member_id) {
-                    $quiz = $theory->quizzes->first();
+                'data' => $data
+            ], 200);
 
-                    $theoryData = [
-                        'id' => $theory->theory_id,
-                        'title' => $theory->title,
-                        'short_description' => $theory->short_description,
-                        'friendly_url' => $theory->friendly_url,
-                        'picture' => $theory->picture
-                    ];
-
-                    if ($quiz) {
-                        $hasAttempted = QuizMember::where('member_id', $member_id)
-                            ->where('quiz_id', $quiz->id)
-                            ->exists();
-
-                        $is_finish = QuizMember::where('member_id', $member_id)
-                            ->where('is_finish', 1)
-                            ->exists();
-
-                        $theoryData['quiz'] = [
-                            'id' => $quiz->id,
-                            'name' => $quiz->name,
-                            'friendly_url' => $quiz->friendly_url,
-                            'time' => $quiz->time,
-                            'pointAward' => $quiz->pointAward,
-                            'question_count' => $quiz->questions->count(),
-                            'has_attempted' => $hasAttempted,
-                            'is_finish' => $is_finish
-                        ];
-                    }
-
-                    return $theoryData;
-                })
-            ];
-
-            return response()->json($response, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,

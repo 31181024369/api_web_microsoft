@@ -15,7 +15,6 @@ class AdvertiseController extends Controller
     {
         try {
             $pos=$request['id_pos'];
-            $module_show=$request['module_show'];
             $query=Advertise::orderBy('id','desc');
             if(empty($request->input('data'))||$request->input('data')=='undefined' ||$request->input('data')=='')
             {
@@ -57,6 +56,7 @@ class AdvertiseController extends Controller
     public function store(Request $request)
     {
         try{
+
             $disPath = public_path();
             $advertise = new Advertise();
             $filePath = '';
@@ -79,16 +79,12 @@ class AdvertiseController extends Controller
             }
             $advertise-> title = $request->title;
             $advertise-> picture = $filePath;
-            $advertise-> pos = $request->pos;
+            $advertise->id_pos = $request->id_pos;
             $advertise-> width = $request->width;
             $advertise-> height = $request->height;
             $advertise-> link = $request->link?$request->link:'#';
-            $advertise-> target = $request->target?$request->target:'_self';
-            // $advertise-> module_show = $module;
             $advertise-> description = $request->description?$request->description:0;
-            $advertise-> menu_order = $request->menu;
             $advertise-> display = $request->display;
-            $advertise-> lang = 'vi';
             $advertise->save();
             return response()->json( [
                 'status'=>true,
@@ -118,7 +114,20 @@ class AdvertiseController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        try{
+            $list = Advertise::find($id);
+            return response()->json([
+                'status'=> true,
+                'list' => $list
+            ]);
+        }catch (\Exception $error) {
+
+            return response()->json([
+                'status_code' => 500,
+                'message' => 'error',
+                'error' => $error->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -126,7 +135,51 @@ class AdvertiseController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        try{
+            $disPath = public_path();
+
+            $advertise = Advertise::Find( $id );
+            $filePath = '';
+            if ( $request->picture != null && $listAdvertise->picture != $request->picture ) {
+                $filePath = '';
+                $DIR = $disPath.'\uploads\advertise';
+                $httpPost = file_get_contents( 'php://input' );
+                $file_chunks = explode( ';base64,', $request->picture[ 0 ] );
+                $fileType = explode( 'image/', $file_chunks[ 0 ] );
+                $image_type = $fileType[ 0 ];
+
+                //return response()->json( $file_chunks );
+                $base64Img = base64_decode( $file_chunks[ 1 ] );
+                $data = iconv( 'latin5', 'utf-8', $base64Img );
+                $name = uniqid();
+                $file = $DIR .'\\'. $name . '.png';
+                $filePath = 'advertise/'.$name . '.png';
+
+                file_put_contents( $file,  $base64Img );
+            } else {
+                $filePath = $listAdvertise->picture;
+            }
+
+            $advertise-> title = $request->title;
+            $advertise-> picture = $filePath;
+            $advertise->id_pos = $request->id_pos;
+            $advertise-> width = $request->width;
+            $advertise-> height = $request->height;
+            $advertise-> link = $request->link?$request->link:'#';
+            $advertise-> description = $request->description?$request->description:0;
+            $advertise-> display = $request->display;
+            $advertise->save();
+            return response()->json( [
+                'status'=>true,
+            ] );
+        }catch (\Exception $error) {
+
+            return response()->json([
+                'status_code' => 500,
+                'message' => 'error',
+                'error' => $error->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -134,6 +187,50 @@ class AdvertiseController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try{
+            //is_pos
+
+            $list = Advertise::Find($id)->delete();
+            return response()->json([
+                'status'=> true,
+                'list' => $list
+            ]);
+        }catch (\Exception $error) {
+
+            return response()->json([
+                'status_code' => 500,
+                'message' => 'error',
+                'error' => $error->getMessage()
+            ], 500);
+        }
+    }
+    public function deleteAll(Request $request)
+    {
+        $arr =$request->data;
+        try {
+
+                if($arr)
+                {
+                    foreach ($arr as $item) {
+                        Advertise::Find($item)->delete();
+                    }
+                }
+                else
+                {
+                    return response()->json([
+                    'status'=>false,
+                    ],422);
+                }
+                return response()->json([
+                    'status'=>true,
+                ],200);
+        } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+            $response = [
+                'status' => false,
+                'error' => $errorMessage
+            ];
+            return response()->json($response, 500);
+        }
     }
 }

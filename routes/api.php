@@ -20,6 +20,13 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
 
     Route::resource('quiz', App\Http\Controllers\Admin\QuizController::class);
     Route::resource('result-exams', App\Http\Controllers\Admin\ResultExamsController::class);
+
+    Route::resource('advertise',App\Http\Controllers\Admin\AdvertiseController::class);
+    Route::resource('ad-pos',App\Http\Controllers\Admin\AdposController::class);
+
+    Route::post('delete-all-advertise',[App\Http\Controllers\Admin\AdvertiseController::class,'deleteAll']);
+    Route::post('delete-all-ad-pos',[App\Http\Controllers\Admin\AdposController::class,'deleteAll']);
+
 });
 
 //Member
@@ -46,7 +53,7 @@ Route::get('theory-categories/show', [App\Http\Controllers\Admin\TheOryCategoryC
 Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
 Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
 
-//Gift 
+//Gift
 Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
 Route::delete('gifts/delete', [App\Http\Controllers\Admin\GiftController::class, 'delete']);
 

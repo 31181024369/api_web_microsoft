@@ -22,7 +22,7 @@ class AdposController extends Controller
             else{
                 $Adpos = $query->where("title", 'like', '%' . $request->data . '%');
             }
-            $list=$list->orderBy('id_pos','desc')->paginate(10);
+            $list=$Adpos->orderBy('id_pos','desc')->paginate(10);
             $response = [
                 'status' => true,
                 'list' => $list
@@ -52,6 +52,7 @@ class AdposController extends Controller
     public function store(Request $request)
     {
         try {
+
             $adpos = new Adpos();
             $adpos->fill([
                 'name' => $request->input('name'),
@@ -139,11 +140,13 @@ class AdposController extends Controller
     public function destroy(string $id)
     {
         try {
-            $Adpos=Adpos::where('is_pos',$id)->first();
+
+            $Adpos=Adpos::where('id_pos',$id)->first();
+
             if($Adpos){
-                Advertise::where('is_pos',$id)->delete();
+                Advertise::where('id_pos',$id)->delete();
             }
-            $list = Adpos::Find($id)->delete();
+            $list = Adpos::where('id_pos',$id)->delete();
 
             return response()->json([
                 'status'=> true,
@@ -155,6 +158,36 @@ class AdposController extends Controller
                 'message' => 'error',
                 'error' => $error->getMessage()
             ], 500);
+        }
+    }
+    public function deleteAll(Request $request)
+    {
+        $arr =$request->data;
+
+        try {
+                if($arr)
+                {
+                    foreach ($arr as $item) {
+                        Adpos::Find($item)->delete();
+                    }
+                }
+                else
+                {
+                    return response()->json([
+                    'status'=>false,
+                    ],422);
+                }
+                return response()->json([
+                    'status'=>true,
+                ],200);
+
+        } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+            $response = [
+                'status' => 'false',
+                'error' => $errorMessage
+            ];
+            return response()->json($response, 500);
         }
     }
 }

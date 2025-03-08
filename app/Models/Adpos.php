@@ -20,8 +20,5 @@ class Adpos extends Model
         'display',
     ];
 
-    public function advertise()
-    {
-        return $this->hasMany(Advertise::class,'pos','id_pos');
-    }
+
 }
