@@ -125,4 +125,5 @@ class TheoryControler extends Controller
             ], 500);
         }
     }
+
 }
