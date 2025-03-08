@@ -79,7 +79,6 @@ class AdminController extends Controller
             $filePath = '';
             $disPath = public_path();
 
-
             if ($request->avatar != null) {
 
                 $DIR = $disPath . '\uploads\admin';
