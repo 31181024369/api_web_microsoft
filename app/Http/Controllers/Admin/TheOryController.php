@@ -138,7 +138,13 @@ class TheOryController extends Controller
     public function edit(string $id)
     {
         try {
-            $theOry = TheOry::findOrFail($id);
+            $theOry = TheOry::findOrFail($id)->makeHidden(['created_at', 'updated_at']);
+            if ($theOry == null) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'id not found'
+                ], 404);
+            }
             return response()->json([
                 'status' => true,
                 'data' => $theOry
