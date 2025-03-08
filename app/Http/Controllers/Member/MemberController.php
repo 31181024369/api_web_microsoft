@@ -17,8 +17,6 @@ class MemberController extends Controller
     public function register(Request $request)
     {
         try {
-
-
             $date = Carbon::now('Asia/Ho_Chi_Minh');
             $timestamp = strtotime($date);
             // check null fill
@@ -85,10 +83,9 @@ class MemberController extends Controller
                     Mã số thuế:'.$member -> tax.'<br>
                     Thời gian đăng kí: '.$date.'<br>
                     Chúng tôi sẽ xem xét và duyệt tài khoản của bạn trong thời gian sớm nhất. Bạn sẽ nhận được thông báo ngay khi
-                     tài khoản được kích hoạt.<br>
+                    tài khoản được kích hoạt.<br>
                     Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với bộ phận hỗ trợ của chúng tôi.
-
-Trân trọng.<br>
+                    Trân trọng.<br>
                     Đội ngũ Microsoft<br>'
                 ];
                 Mail::to($to)
@@ -113,10 +110,10 @@ Trân trọng.<br>
             ], 422);
         }
     }
+
     public function login(Request $request)
     {
         try {
-
             $member = Member::where('username', $request->username)
                 ->first();
 
@@ -133,8 +130,6 @@ Trân trọng.<br>
                 $abbreviation .= $word[0];
             }
 
-
-
             if (isset($member) && $abbreviation != "$" && Hash::check($request->password, $member->password) == false) {
                 Member::where('id', $member->id)->first()->update(['password' => Hash::make($request->password)]);
             }
@@ -144,20 +139,31 @@ Trân trọng.<br>
                 {
                     return response()->json([
                         'status' => false,
-                        'message' => 'Unapproved account'
+                        'success' => 'notApproved',
+                        'message' => 'Tài khoản chưa được duyệt'
                     ]);
                 }
 
                 $success = $member->createToken('Member')->accessToken;
+
+                $filteredMember = $member->makeHidden([
+                    'password', 'created_at', 'updated_at', 'number_passes',
+                    'm_status', 'city_province', 'ward', 'district',
+                    'provider', 'password_token', 'address'
+                ]);
+
                 return response()->json([
-                    'status' => true,
+                    "status" => true,
+                    "success" => "done",
+                    "message" => "Đăng nhập thành công",
                     'token' => $success,
-                    'member' => $member
+                    'member' => $filteredMember
                 ]);
             } else {
                 return response()->json([
-                    'status' => false,
-                    'message' => 'wrongPassword'
+                    "status" => false,
+                    "success" => "fail",
+                    "message" => "Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng thử lại!"
                 ]);
             }
         } catch (Exception $e) {
@@ -167,6 +173,7 @@ Trân trọng.<br>
             ]);
         }
     }
+
     public function inforMember(Request $request)
     {
         try {
