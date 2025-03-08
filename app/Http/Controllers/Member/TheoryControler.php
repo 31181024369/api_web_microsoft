@@ -54,7 +54,7 @@ class TheoryControler extends Controller
                     return $theoryData;
                 })->filter(function ($theory) {
                     return isset($theory['quiz']);
-                });
+                })->values(); // Thêm values() ở đây
 
                 if ($theories->isNotEmpty()) {
                     $response[] = [
