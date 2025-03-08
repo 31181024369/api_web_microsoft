@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 use App\Models\Gift;
-use Illuminate\Support\Facades\DB;
 use App\Models\Member;
+use App\Models\GiftHistory;
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GiftController extends Controller
 {
@@ -54,7 +58,6 @@ class GiftController extends Controller
     public function redeem(Request $request, string $id)
     {
         try {
-            // Get authenticated member
             $member = Auth::guard('member')->user();
             if (!$member) {
                 return response()->json([
@@ -63,63 +66,63 @@ class GiftController extends Controller
                 ], 401);
             }
 
-            // Find gift
-            $gift = Gift::find($id);
-            if (!$gift) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Không tìm thấy phần quà'
-                ], 404);
-            }
+            $gift = Gift::findOrFail($id);
 
-            // Check if member has enough points
             if ($member->points < $gift->reward_point) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Bạn không đủ điểm để đổi phần quà này',
-                    'required_points' => $gift->reward_point,
-                    'current_points' => $member->points,
-                    'missing_points' => $gift->reward_point - $member->points
+                    'data' => [
+                        'required_points' => $gift->reward_point,
+                        'current_points' => $member->points,
+                        'missing_points' => $gift->reward_point - $member->points
+                    ]
                 ], 400);
             }
 
-            // Begin transaction
-            DB::beginTransaction();
             try {
-                // Subtract points from member
-                $member->points -= $gift->reward_point;
-                // Add to used points
-                $member->used_points = ($member->used_points ?? 0) + $gift->reward_point;
-                $member->save();
+                DB::transaction(function () use ($member, $gift, &$updatedMember) {
+                    Member::where('id', $member->id)
+                        ->update([
+                            'points' => DB::raw('points - ' . $gift->reward_point),
+                            'used_points' => DB::raw('COALESCE(used_points, 0) + ' . $gift->reward_point)
+                        ]);
 
-                // Create redemption record if you have a table for it
-                // GiftRedemption::create([
-                //     'member_id' => $member->id,
-                //     'gift_id' => $gift->id,
-                //     'points_used' => $gift->reward_point,
-                //     'redeemed_at' => now()
-                // ]);
+                    GiftHistory::create([
+                        'member_id' => $member->id,
+                        'gift_id' => $gift->id,
+                        'points_used' => $gift->reward_point,
+                        'remaining_points' => $member->points - $gift->reward_point,
+                        'redeemed_at' => now()
+                    ]);
 
-                DB::commit();
+                    $updatedMember = Member::find($member->id);
+                });
 
                 return response()->json([
                     'status' => true,
                     'message' => 'Đổi quà thành công',
                     'data' => [
-                        'gift' => $gift,
-                        'remaining_points' => $member->points,
-                        'used_points' => $member->used_points
+                        'gift' => $gift->makeHidden(['created_at', 'updated_at']),
+                        'points' => [
+                            'remaining' => $updatedMember->points,
+                            'used' => $updatedMember->used_points ?? 0
+                        ]
                     ]
                 ], 200);
             } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
+                Log::error('Gift redemption failed: ' . $e->getMessage());
+                throw new \Exception('Có lỗi khi xử lý đổi quà');
             }
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Không tìm thấy phần quà'
+            ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'message' => 'Có lỗi xảy ra khi đổi quà',
-                'error' => $e->getMessage()
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ], 500);
         }
     }

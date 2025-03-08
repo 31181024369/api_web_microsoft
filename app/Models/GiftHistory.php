@@ -1,0 +1,33 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class GiftHistory extends Model
+{
+    protected $table = 'gift_history';
+
+    protected $fillable = [
+        'member_id',
+        'gift_id',
+        'points_used',
+        'remaining_points',
+        'redeemed_at'
+    ];
+
+    protected $casts = [
+        'redeemed_at' => 'datetime'
+    ];
+
+    // public function member(): BelongsTo
+    // {
+    //     return $this->belongsTo(Member::class);
+    // }
+
+    // public function gift(): BelongsTo
+    // {
+    //     return $this->belongsTo(Gift::class);
+    // }
+}
