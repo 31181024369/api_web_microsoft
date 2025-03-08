@@ -53,12 +53,17 @@ Route::get('theory-categories/show', [App\Http\Controllers\Admin\TheOryCategoryC
 Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
 Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
 
+<<<<<<< HEAD
 //Gift
+=======
+//Gift Admin
+>>>>>>> 64a91849350730d60e8869380bb959c98e5bb8cd
 Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
 Route::delete('gifts/delete', [App\Http\Controllers\Admin\GiftController::class, 'delete']);
 
 //Gift Member
 Route::get('gift-member', [App\Http\Controllers\Member\GiftController::class, 'index']);
+Route::post('gifts/{id}/redeem', [App\Http\Controllers\Member\GiftController::class, 'redeem']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();

@@ -10,9 +10,14 @@ use Illuminate\Support\Facades\Validator;
 class GiftController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
         $gift = Gift::all()->makeHidden(['created_at', 'updated_at']);
+        if ($request->has('data') && $request->data != 'undefined' && $request->data != "") {
+            $gift->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->data . '%');
+            });
+        }
         return response()->json([
             'status' => true,
             'message' => 'success',
