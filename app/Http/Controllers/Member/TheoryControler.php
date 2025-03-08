@@ -54,7 +54,7 @@ class TheoryControler extends Controller
                     return $theoryData;
                 })->filter(function ($theory) {
                     return isset($theory['quiz']);
-                })->values(); // Thêm values() ở đây
+                })->values();
 
                 if ($theories->isNotEmpty()) {
                     $response[] = [
@@ -118,6 +118,36 @@ class TheoryControler extends Controller
                 'status' => false,
                 'error' => 'Không tìm thấy bài học'
             ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function take5theory()
+    {
+        try {
+            $theories = TheOry::select('theory_id', 'title', 'short_description', 'friendly_url', 'picture')
+                ->orderBy('theory_id', 'desc')
+                ->limit(5)
+                ->get();
+
+            $response = [
+                'status' => true,
+                'data' => $theories->map(function ($theory) {
+                    return [
+                        'id' => $theory->theory_id,
+                        'title' => $theory->title,
+                        'short_description' => $theory->short_description,
+                        'friendly_url' => $theory->friendly_url,
+                        'picture' => $theory->picture
+                    ];
+                })
+            ];
+
+            return response()->json($response, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
