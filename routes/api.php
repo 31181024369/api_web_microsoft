@@ -46,9 +46,9 @@ Route::get('theory-categories/show', [App\Http\Controllers\Admin\TheOryCategoryC
 Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
 Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
 
-//Gift Category
-Route::resource('gift-category', App\Http\Controllers\Admin\GiftCategoryController::class);
-Route::delete('gift-categories/delete', [App\Http\Controllers\Admin\GiftCategoryController::class, 'delete']);
+//Gift 
+Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
+Route::delete('gifts/delete', [App\Http\Controllers\Admin\GiftController::class, 'delete']);
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
