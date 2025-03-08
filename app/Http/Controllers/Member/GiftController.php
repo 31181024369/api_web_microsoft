@@ -13,11 +13,15 @@ class GiftController extends Controller
     {
         try {
             $query = Gift::query();
-            $perPage = $request->input('per_page', 10);
+
+            $perPage = $request->input('per_page', 20);
 
             $gifts = $query->orderBy('id', 'desc')
-                ->paginate($perPage)
-                ->makeHidden(['created_at', 'updated_at']);
+                ->paginate($perPage);
+
+            $gifts->through(function ($gift) {
+                return $gift->makeHidden(['created_at', 'updated_at']);
+            });
 
             $response = [
                 'status' => true,
@@ -38,7 +42,6 @@ class GiftController extends Controller
             ], 500);
         }
     }
-
     /**
      * Show the form for creating a new resource.
      */
