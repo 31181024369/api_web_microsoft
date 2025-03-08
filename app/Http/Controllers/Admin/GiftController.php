@@ -11,11 +11,11 @@ class GiftController extends Controller
 
     public function index()
     {
-        $gifts = Gift::all();
+        $gift = Gift::all();
         return response()->json([
             'status' => true,
             'message' => 'success',
-            'data' => $gifts
+            'data' => $gift
         ], 200);
     }
 
@@ -38,24 +38,24 @@ class GiftController extends Controller
             $gift->reward_point = $validatedData['reward_point'];
             $gift->display = $validatedData['display'];
 
-            $filePath = '';
-            $disPath = public_path();
-            if ($request->picture != null && $gift->picture !=  $request->picture) {
-                $DIR = $disPath . '\uploads\gift';
-                $httpPost = file_get_contents('php://input');
-                $file_chunks = explode(';base64,', $request->picture[0]);
-                $fileType = explode('image/', $file_chunks[0]);
-                $image_type = $fileType[0];
-                $base64Img = base64_decode($file_chunks[1]);
-                $data = iconv('latin5', 'utf-8', $base64Img);
-                $name = uniqid();
-                $file = $DIR . '\\' . $name . '.png';
-                $filePath = 'gift/' . $name . '.png';
-                file_put_contents($file,  $base64Img);
-            } else {
-                $filePath =  $gift->picture;
-            }
-            $gift->picture = $filePath;
+            // $filePath = '';
+            // $disPath = public_path();
+            // if ($request->picture != null && $gift->picture !=  $request->picture) {
+            //     $DIR = $disPath . '\uploads\gift';
+            //     $httpPost = file_get_contents('php://input');
+            //     $file_chunks = explode(';base64,', $request->picture[0]);
+            //     $fileType = explode('image/', $file_chunks[0]);
+            //     $image_type = $fileType[0];
+            //     $base64Img = base64_decode($file_chunks[1]);
+            //     $data = iconv('latin5', 'utf-8', $base64Img);
+            //     $name = uniqid();
+            //     $file = $DIR . '\\' . $name . '.png';
+            //     $filePath = 'gift/' . $name . '.png';
+            //     file_put_contents($file,  $base64Img);
+            // } else {
+            //     $filePath =  $gift->picture;
+            // }
+            //$gift->picture = $filePath;
             $gift->save();
 
             return response()->json([
