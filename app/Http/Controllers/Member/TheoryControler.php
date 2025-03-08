@@ -35,6 +35,10 @@ class TheoryControler extends Controller
                             ->where('quiz_id', $quiz->id)
                             ->exists();
 
+                        $is_finish = QuizMember::where('member_id', $member_id)
+                            ->where('is_finish', 1)
+                            ->exists();
+
                         $theoryData['quiz'] = [
                             'id' => $quiz->id,
                             'name' => $quiz->name,
@@ -42,7 +46,8 @@ class TheoryControler extends Controller
                             'time' => $quiz->time,
                             'pointAward' => $quiz->pointAward,
                             'question_count' => $quiz->questions->count(),
-                            'has_attempted' => $hasAttempted
+                            'has_attempted' => $hasAttempted,
+                            'is_finish' => $is_finish
                         ];
                     }
 

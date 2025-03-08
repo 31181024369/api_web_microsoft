@@ -94,6 +94,7 @@ class AdminController extends Controller
                 $filePath = 'admin/' . $name . '.png';
                 file_put_contents($file,  $base64Img);
             }
+
             $userAdmin->avatar = $filePath;
             $userAdmin->phone = $request['phone'];
             $userAdmin->status = $request['status'];
