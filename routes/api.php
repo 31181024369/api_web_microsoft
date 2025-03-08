@@ -50,6 +50,8 @@ Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::cl
 Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
 Route::delete('gifts/delete', [App\Http\Controllers\Admin\GiftController::class, 'delete']);
 
+//Gift Member
+Route::get('gift-member', [App\Http\Controllers\Admin\GiftController::class, 'index']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
