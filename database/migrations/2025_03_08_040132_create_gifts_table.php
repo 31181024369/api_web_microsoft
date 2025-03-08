@@ -6,27 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('gift_categories', function (Blueprint $table) {
-            $table->id('id');
-            $table->string('title', 255);
+        Schema::create('gifts', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
             $table->text('description')->nullable();
             $table->integer('reward_point');
-            $table->string('picture', 255)->nullable();
+            $table->string('picture')->nullable();
             $table->boolean('display')->default(true);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('gift_categories');
+        Schema::dropIfExists('gifts');
     }
 };

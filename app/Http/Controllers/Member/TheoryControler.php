@@ -35,6 +35,10 @@ class TheoryControler extends Controller
                             ->where('quiz_id', $quiz->id)
                             ->exists();
 
+                        $is_finish = QuizMember::where('member_id', $member_id)
+                            ->where('is_finish', 1)
+                            ->exists();
+
                         $theoryData['quiz'] = [
                             'id' => $quiz->id,
                             'name' => $quiz->name,
@@ -42,14 +46,15 @@ class TheoryControler extends Controller
                             'time' => $quiz->time,
                             'pointAward' => $quiz->pointAward,
                             'question_count' => $quiz->questions->count(),
-                            'has_attempted' => $hasAttempted
+                            'has_attempted' => $hasAttempted,
+                            'is_finish' => $is_finish
                         ];
                     }
 
                     return $theoryData;
                 })->filter(function ($theory) {
                     return isset($theory['quiz']);
-                });
+                })->values();
 
                 if ($theories->isNotEmpty()) {
                     $response[] = [
@@ -113,6 +118,67 @@ class TheoryControler extends Controller
                 'status' => false,
                 'error' => 'Không tìm thấy bài học'
             ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function take5theory()
+    {
+        try {
+            $member_id = Auth::guard('member')->id();
+
+            $theories = TheOry::with(['quizzes' => function ($query) {
+                $query->select('id', 'theory_id', 'name', 'friendly_url', 'time', 'pointAward')
+                    ->with('questions:id,quiz_id');
+            }])
+                ->select('theory_id', 'title', 'short_description', 'friendly_url', 'picture')
+                ->orderBy('theory_id', 'desc')
+                ->limit(5)
+                ->get();
+
+            $response = [
+                'status' => true,
+                'data' => $theories->map(function ($theory) use ($member_id) {
+                    $quiz = $theory->quizzes->first();
+
+                    $theoryData = [
+                        'id' => $theory->theory_id,
+                        'title' => $theory->title,
+                        'short_description' => $theory->short_description,
+                        'friendly_url' => $theory->friendly_url,
+                        'picture' => $theory->picture
+                    ];
+
+                    if ($quiz) {
+                        $hasAttempted = QuizMember::where('member_id', $member_id)
+                            ->where('quiz_id', $quiz->id)
+                            ->exists();
+
+                        $is_finish = QuizMember::where('member_id', $member_id)
+                            ->where('is_finish', 1)
+                            ->exists();
+
+                        $theoryData['quiz'] = [
+                            'id' => $quiz->id,
+                            'name' => $quiz->name,
+                            'friendly_url' => $quiz->friendly_url,
+                            'time' => $quiz->time,
+                            'pointAward' => $quiz->pointAward,
+                            'question_count' => $quiz->questions->count(),
+                            'has_attempted' => $hasAttempted,
+                            'is_finish' => $is_finish
+                        ];
+                    }
+
+                    return $theoryData;
+                })
+            ];
+
+            return response()->json($response, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
