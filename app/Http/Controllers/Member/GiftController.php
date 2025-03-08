@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Gift;
+use Illuminate\Support\Facades\DB;
 
 class GiftController extends Controller
 {
@@ -13,18 +15,23 @@ class GiftController extends Controller
     {
         try {
             $query = Gift::query();
+            $member = Auth::guard('member')->user();
+            $memberPoints = $member ? $member->points : 0;
 
             $perPage = $request->input('per_page', 20);
 
             $gifts = $query->orderBy('id', 'desc')
                 ->paginate($perPage);
 
-            $gifts->through(function ($gift) {
-                return $gift->makeHidden(['created_at', 'updated_at']);
+            $gifts->through(function ($gift) use ($memberPoints) {
+                $gift->makeHidden(['created_at', 'updated_at']);
+                $gift->can_redeem = ($memberPoints - $gift->reward_point) >= 0;
+                return $gift;
             });
 
             $response = [
                 'status' => true,
+                'member_points' => $memberPoints,
                 'list' => $gifts->items(),
                 'pagination' => [
                     'current_page' => $gifts->currentPage(),
@@ -42,51 +49,77 @@ class GiftController extends Controller
             ], 500);
         }
     }
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function redeem(Request $request, string $id)
     {
-        //
-    }
+        try {
+            // Get authenticated member
+            $member = Auth::guard('member')->user();
+            if (!$member) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Vui lòng đăng nhập để đổi quà'
+                ], 401);
+            }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+            // Find gift
+            $gift = Gift::find($id);
+            if (!$gift) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không tìm thấy phần quà'
+                ], 404);
+            }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+            // Check if member has enough points
+            if ($member->points < $gift->reward_point) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Bạn không đủ điểm để đổi phần quà này',
+                    'required_points' => $gift->reward_point,
+                    'current_points' => $member->points,
+                    'missing_points' => $gift->reward_point - $member->points
+                ], 400);
+            }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+            // Begin transaction
+            DB::beginTransaction();
+            try {
+                // Subtract points from member
+                $member->points -= $gift->reward_point;
+                // Add to used points
+                $member->used_points = ($member->used_points ?? 0) + $gift->reward_point;
+                $member->save();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+                // Create redemption record if you have a table for it
+                // GiftRedemption::create([
+                //     'member_id' => $member->id,
+                //     'gift_id' => $gift->id,
+                //     'points_used' => $gift->reward_point,
+                //     'redeemed_at' => now()
+                // ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Đổi quà thành công',
+                    'data' => [
+                        'gift' => $gift,
+                        'remaining_points' => $member->points,
+                        'used_points' => $member->used_points
+                    ]
+                ], 200);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra khi đổi quà',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
