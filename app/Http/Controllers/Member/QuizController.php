@@ -137,6 +137,13 @@ class QuizController extends Controller
                 'time_start'=>$data['startTime'],
                 'time_end'=>$data['endTime']
             ]);
+            if($quiz_member && $quiz_member->is_finish==1){
+                $Member=Member::where('id',$member->id)->first();
+                if($Member){
+                    $Member->number_passes= $Member->number_passes+1;
+                    $Member->save();
+                }
+            }
             $checkTimes=QuizMember::where('member_id',$member->id)
             ->where('quiz_id',$data['quizId'])->where('is_finish',1)->get();
 

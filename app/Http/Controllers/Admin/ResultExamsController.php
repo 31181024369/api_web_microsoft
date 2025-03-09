@@ -20,7 +20,14 @@ class ResultExamsController extends Controller
     public function index(Request $request)
     {
         try{
-            $QuizMember=QuizMember::with('member','quiz')->orderBy('id','desc')->paginate(10);
+            $catId = $request->cat_id;
+            $query=QuizMember::with(['member', 'quiz']);
+            if($catId){
+                $query->whereHas('quiz', function ($query) use ($catId) {
+                    $query->where('cat_id', $catId);
+                });
+            }
+            $QuizMember= $query->orderBy('id','desc')->paginate(10);
             return response()->json([
                 'status'=>true,
                 'data'=> $QuizMember
