@@ -21,13 +21,13 @@ class GiftHistory extends Model
         'redeemed_at' => 'datetime'
     ];
 
-    // public function member(): BelongsTo
-    // {
-    //     return $this->belongsTo(Member::class);
-    // }
+    public function gift(): BelongsTo
+    {
+        return $this->belongsTo(Gift::class, 'gift_id');
+    }
 
-    // public function gift(): BelongsTo
-    // {
-    //     return $this->belongsTo(Gift::class);
-    // }
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class, 'member_id');
+    }
 }
