@@ -120,7 +120,7 @@ class MemberController extends Controller
             if (!$member) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'userNotExist'
+                    'message' => 'Tài khoản không tồn tại'
                 ]);
             }
             $abbreviation = "";
