@@ -59,6 +59,7 @@ class QuizController extends Controller
     }
     public function submitQuiz(Request $request)
     {
+
         try {
             $member = Auth::guard('member')->user();
             $data = $request->all();
@@ -137,7 +138,8 @@ class QuizController extends Controller
                 'time_start'=>$data['startTime'],
                 'time_end'=>$data['endTime']
             ]);
-            if($quiz_member && $quiz_member->is_finish==1){
+            $quizMember=QuizMember::where('id',$quiz_member)->first();
+            if($quizMember && $quizMember->is_finish==1){
                 $Member=Member::where('id',$member->id)->first();
                 if($Member){
                     $Member->number_passes= $Member->number_passes+1;
@@ -147,7 +149,7 @@ class QuizController extends Controller
             $checkTimes=QuizMember::where('member_id',$member->id)
             ->where('quiz_id',$data['quizId'])->where('is_finish',1)->get();
 
-            if($checkTimes && count($checkTimes)==1 && $quiz_member->is_finish==1){
+            if($checkTimes && count($checkTimes)==1 && $quizMember->is_finish==1){
                 $Quiz=Quiz::where('id',$data['quizId'])->first();
                 $Member=Member::where('id',$member->id)->first();
                 if($Member)
