@@ -96,7 +96,6 @@ class GiftController extends Controller
                     'remaining_points' => $member->points - $gift->reward_point,
                     'redeemed_at' => now()
                 ]);
-
                 //$updatedMember = Member::find($member->id);
             });
             $updatedMember = Member::find($member->id);
