@@ -42,9 +42,7 @@ Route::group(['prefix' => 'member'], function () {
 
     Route::get('infor-member', [App\Http\Controllers\Member\MemberController::class, 'inforMember']);
 
-    Route::get('show-advertise',[App\Http\Controllers\Member\AdvertiseController::class,'showAdvertise']);
-
-
+    Route::get('show-advertise', [App\Http\Controllers\Member\AdvertiseController::class, 'showAdvertise']);
 });
 
 //Theory Category
@@ -59,6 +57,7 @@ Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::cl
 //Gift Admin
 Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
 Route::delete('gifts/delete', [App\Http\Controllers\Admin\GiftController::class, 'delete']);
+Route::get('gift-history', [App\Http\Controllers\Admin\GifthistoryController::class, 'index']);
 
 //Gift Member
 Route::get('gift-member', [App\Http\Controllers\Member\GiftController::class, 'index']);
