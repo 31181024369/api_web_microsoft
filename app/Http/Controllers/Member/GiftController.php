@@ -101,7 +101,7 @@ class GiftController extends Controller
             $updatedMember = Member::find($member->id);
             return response()->json([
                 'status' => true,
-                'message' => 'success',
+                'message' => 'Đổi quà thành công',
                 'data' => [
                     'gift' => $gift->makeHidden(['created_at', 'updated_at']),
                     'points' => [
