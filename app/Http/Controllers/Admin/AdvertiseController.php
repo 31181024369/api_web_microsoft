@@ -15,7 +15,7 @@ class AdvertiseController extends Controller
     {
         try {
             $pos=$request['id_pos'];
-            $query=Advertise::orderBy('id','desc');
+            $query=Advertise::with('Adpos')->orderBy('id','desc');
             if(empty($request->input('data'))||$request->input('data')=='undefined' ||$request->input('data')=='')
             {
                 $list = $query;
