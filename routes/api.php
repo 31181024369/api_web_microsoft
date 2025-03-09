@@ -21,12 +21,11 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('quiz', App\Http\Controllers\Admin\QuizController::class);
     Route::resource('result-exams', App\Http\Controllers\Admin\ResultExamsController::class);
 
-    Route::resource('advertise',App\Http\Controllers\Admin\AdvertiseController::class);
-    Route::resource('ad-pos',App\Http\Controllers\Admin\AdposController::class);
+    Route::resource('advertise', App\Http\Controllers\Admin\AdvertiseController::class);
+    Route::resource('ad-pos', App\Http\Controllers\Admin\AdposController::class);
 
-    Route::post('delete-all-advertise',[App\Http\Controllers\Admin\AdvertiseController::class,'deleteAll']);
-    Route::post('delete-all-ad-pos',[App\Http\Controllers\Admin\AdposController::class,'deleteAll']);
-
+    Route::post('delete-all-advertise', [App\Http\Controllers\Admin\AdvertiseController::class, 'deleteAll']);
+    Route::post('delete-all-ad-pos', [App\Http\Controllers\Admin\AdposController::class, 'deleteAll']);
 });
 
 //Member
