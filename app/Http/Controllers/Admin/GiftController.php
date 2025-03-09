@@ -136,7 +136,7 @@ class GiftController extends Controller
                 $data = iconv('latin5', 'utf-8', $base64Img);
                 $name = uniqid();
                 $file = $DIR . '\\' . $name . '.png';
-                $filePath = 'theory/' . $name . '.png';
+                $filePath = 'gift/' . $name . '.png';
                 file_put_contents($file,  $base64Img);
             } else {
                 $filePath =  $gift->picture;
