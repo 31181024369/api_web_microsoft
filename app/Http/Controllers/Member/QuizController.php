@@ -8,9 +8,10 @@ use App\Models\Quiz;
 use App\Models\Question;
 use App\Models\Answer;
 use App\Models\QuizMemberAnswer;
+use App\Models\QuizMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\Member;
 class QuizController extends Controller
 {
     public function showQuiz(Request $request)
@@ -128,7 +129,7 @@ class QuizController extends Controller
                 }
             }
             $point=$result/count($Question);
-            $quiz_member=DB::table('quiz_member')->insert([
+            $quiz_member=DB::table('quiz_member')->insertGetId([
                 'member_id' => $member->id,
                 'quiz_id'=>$data['quizId']??'',
                 'is_finish' =>  $point>=0.8?1:0,
@@ -136,7 +137,19 @@ class QuizController extends Controller
                 'time_start'=>$data['startTime'],
                 'time_end'=>$data['endTime']
             ]);
+            $checkTimes=QuizMember::where('member_id',$member->id)
+            ->where('quiz_id',$data['quizId'])->where('is_finish',1)->get();
 
+            if($checkTimes && count($checkTimes)==1 && $quiz_member->is_finish==1){
+                $Quiz=Quiz::where('id',$data['quizId'])->first();
+                $Member=Member::where('id',$member->id)->first();
+                if($Member)
+                {
+                    $point=isset( $Quiz)?$Quiz->pointAward:0;
+                    $Member->points= $Member->points+$point;
+                    $Member->save();
+                }
+            }
 
             $history = DB::table('history')->insert([
                 'member_id' => $member->id,
