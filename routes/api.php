@@ -41,6 +41,10 @@ Route::group(['prefix' => 'member'], function () {
     Route::get('get-newstheory', [App\Http\Controllers\Member\TheoryControler::class, 'take5theory']);
 
     Route::get('infor-member', [App\Http\Controllers\Member\MemberController::class, 'inforMember']);
+
+    Route::get('show-advertise',[App\Http\Controllers\Member\AdvertiseController::class,'showAdvertise']);
+
+
 });
 
 //Theory Category
