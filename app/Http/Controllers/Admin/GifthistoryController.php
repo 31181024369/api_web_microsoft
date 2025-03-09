@@ -14,7 +14,11 @@ class GifthistoryController extends Controller
             $query = GiftHistory::query();
             $perPage = $request->input('per_page', 20);
 
-            $giftHistories = $query->orderBy('id', 'desc')
+            $giftHistories = $query->with([
+                'member:id,name,email,points,used_points',
+                'gift:id,title'
+            ])
+                ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
             $response = [

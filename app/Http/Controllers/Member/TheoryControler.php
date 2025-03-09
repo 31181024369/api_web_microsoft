@@ -185,4 +185,15 @@ class TheoryControler extends Controller
             ], 500);
         }
     }
+
+    public function take_history_theory()
+    {
+        $member = Auth::guard('member')->user();
+        if (!$member) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Vui lòng đăng nhập để xem lịch sử'
+            ], 401);
+        }
+    }
 }

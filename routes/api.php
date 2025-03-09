@@ -64,6 +64,9 @@ Route::get('gift-member', [App\Http\Controllers\Member\GiftController::class, 'i
 Route::post('gifts/{id}/redeem', [App\Http\Controllers\Member\GiftController::class, 'redeem']);
 Route::get('member/gift-history', [App\Http\Controllers\Member\GiftHiststoryController::class, 'index']);
 
+//Quiz History Member
+Route::get('member/quiz-history', [App\Http\Controllers\Member\QuizHistoryController::class, 'index']);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
