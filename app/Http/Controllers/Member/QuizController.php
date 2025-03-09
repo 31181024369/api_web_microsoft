@@ -154,8 +154,8 @@ class QuizController extends Controller
                 $Member=Member::where('id',$member->id)->first();
                 if($Member)
                 {
-                    $point=isset( $Quiz)?$Quiz->pointAward:0;
-                    $Member->points= $Member->points+$point;
+                    $pointAward=isset( $Quiz)?$Quiz->pointAward:0;
+                    $Member->points= $Member->points+$pointAward;
                     $Member->save();
                 }
             }

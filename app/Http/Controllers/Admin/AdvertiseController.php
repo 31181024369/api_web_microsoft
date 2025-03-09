@@ -140,7 +140,7 @@ class AdvertiseController extends Controller
 
             $advertise = Advertise::Find( $id );
             $filePath = '';
-            if ( $request->picture != null && $listAdvertise->picture != $request->picture ) {
+            if ( $request->picture != null && $advertise->picture != $request->picture ) {
                 $filePath = '';
                 $DIR = $disPath.'\uploads\advertise';
                 $httpPost = file_get_contents( 'php://input' );
@@ -157,7 +157,7 @@ class AdvertiseController extends Controller
 
                 file_put_contents( $file,  $base64Img );
             } else {
-                $filePath = $listAdvertise->picture;
+                $filePath =$advertise->picture;
             }
 
             $advertise-> title = $request->title;

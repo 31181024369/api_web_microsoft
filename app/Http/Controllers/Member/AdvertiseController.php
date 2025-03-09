@@ -13,11 +13,18 @@ class AdvertiseController extends Controller
             // $advertise=Advertise::where('display',1)->get()->groupBy('id_pos');
 
 
-            $advertise = Advertise::where('display', 1)
-            ->get()
-            ->groupBy(function ($item) {
-                return $item->Adpos ? $item->Adpos->name : $item->Adpos->title;
-            });
+            $advertise = Advertise::with('Adpos')
+                ->where('display', 1)
+                ->get()
+                ->groupBy(function ($item) {
+                    return optional($item->Adpos)->name ?? optional($item->Adpos)->title;
+                })
+                ->map(function ($items) {
+                    return $items->map(function ($item) {
+                        unset($item->Adpos); // Xóa hoàn toàn thuộc tính 'Adpos'
+                        return $item;
+                    });
+                });
             // return  $advertise;
             // $adpos=Adpos::get();
             // $data=[];
