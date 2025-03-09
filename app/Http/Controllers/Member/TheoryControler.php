@@ -131,23 +131,17 @@ class TheoryControler extends Controller
         try {
             $member_id = Auth::guard('member')->id();
 
-            // Fetch 5 most recent theories with their related quizzes and questions
-            $theories = Theory::with(['quizzes' => function ($query) {
-                $query->select('id', 'theory_id', 'name', 'friendly_url', 'time', 'pointAward')
-                      ->with('questions:id,quiz_id');
-            }])
-            ->select('theory_id', 'title', 'short_description', 'friendly_url', 'picture')
-            ->orderBy('theory_id', 'desc')
-            ->limit(5)
-            ->get();
+            $theories = Theory::whereHas('quizzes')
+                ->with(['quizzes' => function ($query) {
+                    $query->select('id', 'theory_id', 'name', 'friendly_url', 'time', 'pointAward')
+                        ->with('questions:id,quiz_id');
+                }])
+                ->select('theory_id', 'title', 'short_description', 'friendly_url', 'picture')
+                ->orderBy('theory_id', 'desc')
+                ->limit(5)
+                ->get();
 
-            // Transform the data and filter out theories without quizzes
             $data = $theories->map(function ($theory) use ($member_id) {
-                // Skip theories without quizzes
-                if ($theory->quizzes->isEmpty()) {
-                    return null;
-                }
-
                 $quiz = $theory->quizzes->first();
 
                 $hasAttempted = QuizMember::where([
@@ -178,13 +172,12 @@ class TheoryControler extends Controller
                         'is_finish' => $is_finish
                     ]
                 ];
-            })->filter()->values(); // Remove null values and reindex the array
+            });
 
             return response()->json([
                 'status' => true,
                 'data' => $data
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,

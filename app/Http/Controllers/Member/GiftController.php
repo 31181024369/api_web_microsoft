@@ -80,49 +80,47 @@ class GiftController extends Controller
                 ], 400);
             }
 
-            try {
-                DB::transaction(function () use ($member, $gift, &$updatedMember) {
-                    Member::where('id', $member->id)
-                        ->update([
-                            'points' => DB::raw('points - ' . $gift->reward_point),
-                            'used_points' => DB::raw('COALESCE(used_points, 0) + ' . $gift->reward_point)
-                        ]);
+            $updatedMember = null;
 
-                    GiftHistory::create([
-                        'member_id' => $member->id,
-                        'gift_id' => $gift->id,
-                        'points_used' => $gift->reward_point,
-                        'remaining_points' => $member->points - $gift->reward_point,
-                        'redeemed_at' => now()
+            DB::transaction(function () use ($member, $gift, &$updatedMember) {
+                Member::where('id', $member->id)
+                    ->update([
+                        'points' => DB::raw('points - ' . $gift->reward_point),
+                        'used_points' => DB::raw('COALESCE(used_points, 0) + ' . $gift->reward_point)
                     ]);
 
-                    $updatedMember = Member::find($member->id);
-                });
+                GiftHistory::create([
+                    'member_id' => $member->id,
+                    'gift_id' => $gift->id,
+                    'points_used' => $gift->reward_point,
+                    'remaining_points' => $member->points - $gift->reward_point,
+                    'redeemed_at' => now()
+                ]);
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'success',
-                    'data' => [
-                        'gift' => $gift->makeHidden(['created_at', 'updated_at']),
-                        'points' => [
-                            'remaining' => $updatedMember->points,
-                            'used' => $updatedMember->used_points ?? 0
-                        ]
+                //$updatedMember = Member::find($member->id);
+            });
+            $updatedMember = Member::find($member->id);
+            return response()->json([
+                'status' => true,
+                'message' => 'success',
+                'data' => [
+                    'gift' => $gift->makeHidden(['created_at', 'updated_at']),
+                    'points' => [
+                        'remaining' => $updatedMember->points,
+                        'used' => $updatedMember->used_points ?? 0
                     ]
-                ], 200);
-            } catch (\Exception $e) {
-                Log::error('Gift redemption failed: ' . $e->getMessage());
-                throw new \Exception('Có lỗi khi xử lý đổi quà');
-            }
+                ]
+            ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Không tìm thấy phần quà'
             ], 404);
         } catch (\Exception $e) {
+            Log::error('Gift redemption failed: ' . $e->getMessage());
             return response()->json([
                 'status' => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                'message' => 'Có lỗi xảy ra khi đổi quà'
             ], 500);
         }
     }
