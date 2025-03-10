@@ -14,12 +14,28 @@ class GifthistoryController extends Controller
             $query = GiftHistory::query();
             $perPage = $request->input('per_page', 10);
             $data = $request->input('data');
+            $startTime = $request->input('start_time');
+            $endTime = $request->input('end_time');
 
-            if ($data) {
-                $query->whereHas('member', function ($q) use ($data) {
-                    $q->where('username', 'LIKE', "%{$data}%")
-                        ->orWhere('email', 'LIKE', "%{$data}%")
-                        ->orWhere('phone', 'LIKE', "%{$data}%");
+            if ($data || $startTime || $endTime) {
+                $query->where(function ($query) use ($data, $startTime, $endTime) {
+                    if ($data) {
+                        $query->whereHas('member', function ($q) use ($data) {
+                            $q->where(function ($innerQ) use ($data) {
+                                $innerQ->where('username', 'LIKE', "%{$data}%")
+                                    ->orWhere('email', 'LIKE', "%{$data}%")
+                                    ->orWhere('phone', 'LIKE', "%{$data}%");
+                            });
+                        });
+                    }
+
+                    if ($startTime && $endTime) {
+                        $query->whereBetween('redeemed_at', [$startTime, $endTime]);
+                    } elseif ($startTime) {
+                        $query->whereDate('redeemed_at', '>=', $startTime);
+                    } elseif ($endTime) {
+                        $query->whereDate('redeemed_at', '<=', $endTime);
+                    }
                 });
             }
 
