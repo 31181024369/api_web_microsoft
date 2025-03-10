@@ -12,7 +12,16 @@ class GifthistoryController extends Controller
     {
         try {
             $query = GiftHistory::query();
-            $perPage = $request->input('per_page', 20);
+            $perPage = $request->input('per_page', 10);
+            $data = $request->input('data');
+
+            if ($data) {
+                $query->whereHas('member', function ($q) use ($data) {
+                    $q->where('username', 'LIKE', "%{$data}%")
+                        ->orWhere('email', 'LIKE', "%{$data}%")
+                        ->orWhere('phone', 'LIKE', "%{$data}%");
+                });
+            }
 
             $giftHistories = $query->with([
                 'member',
