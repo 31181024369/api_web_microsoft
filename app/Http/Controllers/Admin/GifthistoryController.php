@@ -27,7 +27,6 @@ class GifthistoryController extends Controller
                 'member',
                 'gift'
             ])
-                ->whereHas('gift')
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
