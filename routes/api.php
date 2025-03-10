@@ -24,6 +24,8 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::resource('advertise', App\Http\Controllers\Admin\AdvertiseController::class);
     Route::resource('ad-pos', App\Http\Controllers\Admin\AdposController::class);
 
+    Route::resource('product', App\Http\Controllers\Admin\ProductController::class);
+
     Route::post('delete-all-advertise', [App\Http\Controllers\Admin\AdvertiseController::class, 'deleteAll']);
     Route::post('delete-all-ad-pos', [App\Http\Controllers\Admin\AdposController::class, 'deleteAll']);
 });
