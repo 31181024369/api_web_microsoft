@@ -80,7 +80,7 @@ class QuizHistoryController extends Controller
                     'time_start' => $startTime ?? 'Chưa bắt đầu',
                     'reward_point' => $rewardPoints,
                     'times' => $item->times,
-                    'is_finished' => $item->is_finish ? 'true' : 'false',
+                    //'is_finished' => $item->is_finish ? 'true' : 'false',
                     'is_passed' => $isPassed,
                     'result' => [
                         'toltal_question' => $item->total_questions,
