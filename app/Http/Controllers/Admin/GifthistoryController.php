@@ -27,7 +27,6 @@ class GifthistoryController extends Controller
                 'member',
                 'gift'
             ])
-                ->whereHas('gift')
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
@@ -42,13 +41,13 @@ class GifthistoryController extends Controller
                         'used_points' => $item->member->used_points,
                         'status' => $item->member->status
                     ],
-                    'gift' => [
+                    'gift' => $item->gift ? [
                         'id' => $item->gift->id,
                         'title' => $item->gift->title,
                         'description' => $item->gift->description,
                         'picture' => $item->gift->picture,
                         'reward_point' => $item->gift->reward_point,
-                    ],
+                    ] : null,
                     'points_used' => $item->points_used,
                     'remaining_points' => $item->remaining_points,
                     'redeemed_at' => $item->redeemed_at,
