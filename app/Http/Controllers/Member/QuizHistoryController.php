@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
 use App\Models\QuizMember;
+use App\Models\QuizHistory;
+use App\Models\Quiz;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class QuizHistoryController extends Controller
 {
@@ -20,24 +23,83 @@ class QuizHistoryController extends Controller
                 ], 401);
             }
 
-            $query = QuizMember::query()
-                ->where('member_id', $member->id)
-                ->with('quiz:id,name,pointAward,time');
+            $perPage = $request->input('per_page', 10);
 
-            $perPage = $request->input('per_page', 5);
-            $histories = $query->orderBy('id', 'desc')->paginate($perPage);
+            $quizHistory = QuizMember::where('quiz_member.member_id', $member->id)
+                ->with(['quizzes' => function ($query) {
+                    $query->select('id', 'name', 'pointAward', 'theory_id')
+                        ->with('theory:theory_id,title');
+                }])
+                ->join('history', function ($join) {
+                    $join->on('quiz_member.member_id', '=', 'history.member_id')
+                        ->on('quiz_member.quiz_id', '=', 'history.quiz_id')
+                        ->on('quiz_member.times', '=', 'history.times');
+                })
+                ->select(
+                    'quiz_member.id',
+                    'quiz_member.member_id',
+                    'quiz_member.quiz_id',
+                    'quiz_member.is_finish',
+                    'quiz_member.time_start',
+                    'quiz_member.time_end',
+                    'quiz_member.times',
+                    'history.total_questions',
+                    'history.total_correct'
+                )
+                ->orderBy('quiz_member.id', 'desc')
+                ->paginate($perPage);
+
+            $formattedHistory = $quizHistory->through(function ($item) {
+                $startTime = null;
+                if ($item->time_start) {
+                    try {
+                        $startTime = is_numeric($item->time_start)
+                            ? \Carbon\Carbon::createFromTimestamp((int)($item->time_start / 1000))->format('d/m/Y H:i:s')
+                            : \Carbon\Carbon::parse($item->time_start)->format('d/m/Y H:i:s');
+                    } catch (\Exception $e) {
+                        $startTime = null;
+                    }
+                }
+
+                $score = 0;
+                $isPassed = false;
+                if ($item->total_questions > 0) {
+                    $score = ($item->total_correct / $item->total_questions) * 100;
+                    $isPassed = $score >= 80;
+                }
+
+                $rewardPoints = 0;
+                if ($item->is_finish && $isPassed && isset($item->quizzes->pointAward)) {
+                    $rewardPoints = $item->quizzes->pointAward;
+                }
+
+                return [
+                    'name' => $item->quizzes->name ?? 'Không tìm thấy bài thi',
+                    'theory' => $item->quizzes->theory->title ?? 'Không có bài học',
+                    'score' => round($score, 2),
+                    'time_start' => $startTime ?? 'Chưa bắt đầu',
+                    'reward_point' => $rewardPoints,
+                    'times' => $item->times,
+                    'is_finished' => $item->is_finish ? 'true' : 'false',
+                    'is_passed' => $isPassed,
+                    'result' => [
+                        'toltal_question' => $item->total_questions,
+                        'total_correct' => $item->total_correct
+                    ]
+                ];
+            });
 
             $response = [
                 'status' => true,
                 'data' => [
-                    'list' => $histories->items()
-                ],
-                'pagination' => [
-                    'current_page' => $histories->currentPage(),
-                    'total_pages' => $histories->lastPage(),
-                    'per_page' => $histories->perPage(),
-                    'total' => $histories->total(),
-                ],
+                    'list' => $formattedHistory->values(),
+                    'pagination' => [
+                        'current_page' => $quizHistory->currentPage(),
+                        'total_pages' => $quizHistory->lastPage(),
+                        'per_page' => $quizHistory->perPage(),
+                        'total' => $quizHistory->total(),
+                    ]
+                ]
             ];
 
             return response()->json($response, 200);

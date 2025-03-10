@@ -15,7 +15,7 @@ class GifthistoryController extends Controller
             $perPage = $request->input('per_page', 20);
 
             $giftHistories = $query->with([
-                'member:id,name,email,points,used_points',
+                'member:id,email,points,used_points',
                 'gift:id,title'
             ])
                 ->orderBy('id', 'desc')
