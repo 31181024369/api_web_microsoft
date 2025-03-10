@@ -59,7 +59,10 @@ Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::cl
 //Gift Admin
 Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
 Route::delete('gifts/delete', [App\Http\Controllers\Admin\GiftController::class, 'delete']);
+
+//Gift History Admin
 Route::get('gift-history', [App\Http\Controllers\Admin\GifthistoryController::class, 'index']);
+Route::patch('gifts/{id}/confirm', [App\Http\Controllers\Admin\GifthistoryController::class, 'confirm']);
 
 //Gift Member
 Route::get('gift-member', [App\Http\Controllers\Member\GiftController::class, 'index']);

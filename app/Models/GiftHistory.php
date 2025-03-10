@@ -14,11 +14,15 @@ class GiftHistory extends Model
         'gift_id',
         'points_used',
         'remaining_points',
-        'redeemed_at'
+        'redeemed_at',
+        'is_confirmed',
+        'confirmed_at'
     ];
 
     protected $casts = [
-        'redeemed_at' => 'datetime'
+        'redeemed_at' => 'datetime',
+        'is_confirmed' => 'boolean',
+        'confirmed_at' => 'datetime'
     ];
 
     public function gift(): BelongsTo

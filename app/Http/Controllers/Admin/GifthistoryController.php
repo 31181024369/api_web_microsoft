@@ -18,6 +18,7 @@ class GifthistoryController extends Controller
                 'member',
                 'gift'
             ])
+                ->whereHas('gift')
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
@@ -38,11 +39,12 @@ class GifthistoryController extends Controller
                         'description' => $item->gift->description,
                         'picture' => $item->gift->picture,
                         'reward_point' => $item->gift->reward_point,
-                        'quantity' => $item->gift->quantity
                     ],
                     'points_used' => $item->points_used,
                     'remaining_points' => $item->remaining_points,
-                    'redeemed_at' => $item->redeemed_at
+                    'redeemed_at' => $item->redeemed_at,
+                    'status' => $item->is_confirmed ? 'Đã xác nhận' : 'Chờ xác nhận',
+                    'confirm_at' => $item->confirmed_at?->format('d/m/Y H:i:s')
                 ];
             });
 
@@ -60,6 +62,39 @@ class GifthistoryController extends Controller
             ];
 
             return response()->json($response, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function confirm($id)
+    {
+        try {
+            $giftHistory = GiftHistory::findOrFail($id);
+
+            if ($giftHistory->is_confirmed) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Quà đã được xác nhận'
+                ], 400);
+            }
+
+            $giftHistory->update([
+                'is_confirmed' => true,
+                'confirmed_at' => now()
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Xác nhận quà thành công',
+                'data' => [
+                    'id' => $giftHistory->id,
+                    'confirmed_at' => $giftHistory->confirmed_at->format('d/m/Y H:i:s')
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
