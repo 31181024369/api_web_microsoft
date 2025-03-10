@@ -22,10 +22,15 @@ class GiftHiststoryController extends Controller
 
             $query = GiftHistory::query()
                 ->where('member_id', $member->id)
+                ->whereHas('gift')
                 ->with('gift:id,title,reward_point,picture');
 
             $perPage = $request->input('per_page', 5);
             $histories = $query->orderBy('id', 'desc')->paginate($perPage);
+
+            $filteredItems = collect($histories->items())->filter(function ($item) {
+                return $item->gift !== null;
+            });
 
             $response = [
                 'status' => true,
@@ -34,13 +39,13 @@ class GiftHiststoryController extends Controller
                         'current' => $member->points,
                         'used' => $member->used_points ?? 0
                     ],
-                    'list' => $histories->items()
-                ],
-                'pagination' => [
-                    'current_page' => $histories->currentPage(),
-                    'total_pages' => $histories->lastPage(),
-                    'per_page' => $histories->perPage(),
-                    'total' => $histories->total(),
+                    'list' => $filteredItems->values(),
+                    'pagination' => [
+                        'current_page' => $histories->currentPage(),
+                        'total_pages' => $histories->lastPage(),
+                        'per_page' => $histories->perPage(),
+                        'total' => $histories->total(),
+                    ],
                 ],
             ];
 
