@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GiftHistory extends Model
 {
     protected $table = 'gift_history';
-    protected $hidden = ['created_at', 'updated_at'];
+    //protected $hidden = ['created_at', 'updated_at'];
     protected $fillable = [
         'member_id',
         'gift_id',
