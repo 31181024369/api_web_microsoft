@@ -36,7 +36,7 @@ class GifthistoryController extends Controller
                     'member' => [
                         'id' => $item->member->id,
                         'email' => $item->member->email,
-                        'name' => $item->member->name,
+                        'name' => $item->member->username,
                         'points' => $item->member->points,
                         'used_points' => $item->member->used_points,
                         'status' => $item->member->status
