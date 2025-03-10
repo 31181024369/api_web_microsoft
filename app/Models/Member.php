@@ -17,6 +17,8 @@ class Member extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'create_at',
+        'update_at',
     ];
     protected $fillable = [
         'username',
