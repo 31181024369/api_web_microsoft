@@ -36,7 +36,7 @@ Route::group(['prefix' => 'member'], function () {
     Route::get('/show-quiz-detail/{slug}', [App\Http\Controllers\Member\QuizController::class, 'showDetailQuiz']);
     Route::post('/submit-quiz', [App\Http\Controllers\Member\QuizController::class, 'submitQuiz']);
 
-    //Theory
+    //Theory Member
     Route::resource('theory', App\Http\Controllers\Member\TheoryControler::class);
     Route::delete('theorys/delete', [App\Http\Controllers\Member\TheoryControler::class, 'delete']);
     Route::get('theorys/{friendly_url}', [App\Http\Controllers\Member\TheoryControler::class, 'shows']);
@@ -47,12 +47,12 @@ Route::group(['prefix' => 'member'], function () {
     Route::get('show-advertise', [App\Http\Controllers\Member\AdvertiseController::class, 'showAdvertise']);
 });
 
-//Theory Category
+//Theory Category Admin
 Route::resource('theory-category', App\Http\Controllers\Admin\TheOryCategoryController::class);
 Route::delete('theory-categorys/delete', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'delete']);
 Route::get('theory-categories/show', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'showTheoryCategory']);
 
-// Theory
+// Theory Admin
 Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
 Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
 
