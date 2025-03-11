@@ -28,10 +28,13 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
 
     Route::post('delete-all-advertise', [App\Http\Controllers\Admin\AdvertiseController::class, 'deleteAll']);
     Route::post('delete-all-ad-pos', [App\Http\Controllers\Admin\AdposController::class, 'deleteAll']);
+    Route::post('delete-all-product', [App\Http\Controllers\Admin\ProductController::class, 'deleteAll']);
 });
 
 //Member
 Route::group(['prefix' => 'member'], function () {
+    Route::get('show-product', [App\Http\Controllers\Member\ProductController::class,'showUser']);
+
     Route::get('/show-quiz', [App\Http\Controllers\Member\QuizController::class, 'showQuiz']);
     Route::get('/show-quiz-detail/{slug}', [App\Http\Controllers\Member\QuizController::class, 'showDetailQuiz']);
     Route::post('/submit-quiz', [App\Http\Controllers\Member\QuizController::class, 'submitQuiz']);

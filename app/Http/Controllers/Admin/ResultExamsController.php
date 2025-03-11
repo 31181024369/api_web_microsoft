@@ -21,12 +21,18 @@ class ResultExamsController extends Controller
     {
         try{
             $catId = $request->cat_id;
+            $startDay=$request->start;
+            $endDay=$request->end;
             $query=QuizMember::with(['member', 'quiz']);
             if($catId){
                 $query->whereHas('quiz', function ($query) use ($catId) {
                     $query->where('cat_id', $catId);
                 });
             }
+            if(isset($startDay) && isset($endDay)){
+                $query->whereBetween('time_start', [ $startDay, $endDay]);
+            }
+
             $QuizMember= $query->orderBy('id','desc')->paginate(10);
             return response()->json([
                 'status'=>true,
