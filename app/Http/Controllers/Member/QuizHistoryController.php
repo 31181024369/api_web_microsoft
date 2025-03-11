@@ -34,7 +34,7 @@ class QuizHistoryController extends Controller
             $quizHistory = QuizMember::where('quiz_member.member_id', $member->id)
                 ->with(['quizzes' => function ($query) {
                     $query->select('id', 'name', 'pointAward', 'theory_id')
-                        ->with('theory:theory_id,title');
+                        ->with('theory:theory_id,title,url');
                 }])
                 ->join('history', function ($join) {
                     $join->on('quiz_member.member_id', '=', 'history.member_id')
@@ -86,6 +86,7 @@ class QuizHistoryController extends Controller
                 return [
                     'name' => $item->quizzes->name ?? 'Không tìm thấy bài thi',
                     'theory' => $item->quizzes->theory->title ?? 'Không có bài học',
+                    'theory_url' => $item->quizzes->theory->url ?? null,
                     'score' => round($score, 2),
                     'time_start' => $startTime ?? 'Chưa bắt đầu',
                     'reward_point' => $rewardPoints,
