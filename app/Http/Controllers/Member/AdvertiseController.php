@@ -13,9 +13,14 @@ class AdvertiseController extends Controller
             // $advertise=Advertise::where('display',1)->get()->groupBy('id_pos');
 
 
-            $advertise = Advertise::with('Adpos')
+            $advertise = Advertise::with(['Adpos' => function ($query) {
+                $query->where('display', 1);
+            }])
                 ->where('display', 1)
                 ->get()
+                ->filter(function ($item) {
+                    return !empty(optional($item->Adpos)->name) || !empty(optional($item->Adpos)->title);
+                })
                 ->groupBy(function ($item) {
                     return optional($item->Adpos)->name ?? optional($item->Adpos)->title;
                 })
