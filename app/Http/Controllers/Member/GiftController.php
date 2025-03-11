@@ -25,7 +25,8 @@ class GiftController extends Controller
 
             $perPage = $request->input('per_page', 20);
 
-            $gifts = $query->orderBy('id', 'desc')
+            $gifts = $query->where('display', 1)
+                ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
             $gifts->through(function ($gift) use ($memberPoints) {

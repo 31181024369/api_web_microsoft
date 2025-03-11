@@ -12,6 +12,7 @@ use App\Models\QuizMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Member;
+
 class QuizController extends Controller
 {
     public function showQuiz(Request $request)
@@ -33,23 +34,22 @@ class QuizController extends Controller
     {
         try {
             $Quiz = Quiz::where('friendly_url', $slug)->first();
-            $Question= $Question = Question::with('AnswerUser')->where("quiz_id",$Quiz->id)->paginate(10);
-            if($Quiz){
+            $Question = $Question = Question::with('AnswerUser')->where("quiz_id", $Quiz->id)->paginate(10);
+            if ($Quiz) {
                 return response()->json([
                     'status' => true,
                     'data' => [
                         'quiz' => $Quiz,
-                        'questions'=>$Question
+                        'questions' => $Question
                     ]
 
                 ]);
-            }else{
+            } else {
                 return response()->json([
                     'status' => false,
-                    'data' =>null
+                    'data' => null
                 ]);
             }
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
@@ -79,11 +79,11 @@ class QuizController extends Controller
 
                 $times = $checkTimes->times + 1;
             }
-            if(count($Question)!=count($data['answers'])){
+            if (count($Question) != count($data['answers'])) {
                 return response()->json([
-                    'status'=>false,
+                    'status' => false,
                     "success" => "unfinished",
-                    'message'=>"Bạn chưa hoàn thành tất cả các câu hỏi! Vui lòng kiểm tra lại trước khi nộp bài."
+                    'message' => "Bạn chưa hoàn thành tất cả các câu hỏi! Vui lòng kiểm tra lại trước khi nộp bài."
                 ]);
             }
 
@@ -101,17 +101,14 @@ class QuizController extends Controller
                 ]);
 
 
-                // Lấy danh sách câu trả lời đúng theo question_id
                 $answers = Answer::where('question_id', $item['question_id'])
                     ->where('correct_answer', 1)
                     ->pluck('question_id', 'id')
                     ->toArray();
 
-                // Lấy bản ghi vừa chèn từ model
                 $quizMemberAnswer = QuizMemberAnswer::find($quizMemberAnswerId);
 
 
-                // Kiểm tra điều kiện
                 if ($quizMemberAnswer) {
                     $userAnswerIds = explode(',', $quizMemberAnswer->user_answers);
                     $isValid = true;
@@ -125,37 +122,36 @@ class QuizController extends Controller
                     }
 
                     if ($isValid) {
-                        $result++; // Nếu tất cả ID trong user_answers đều có correct_answer = 1 thì cộng thêm 1
+                        $result++;
                     }
                 }
             }
-            $point=$result/count($Question);
-            $quiz_member=DB::table('quiz_member')->insertGetId([
+            $point = $result / count($Question);
+            $quiz_member = DB::table('quiz_member')->insertGetId([
                 'member_id' => $member->id,
-                'quiz_id'=>$data['quizId']??'',
-                'is_finish' =>  $point>=0.8?1:0,
+                'quiz_id' => $data['quizId'] ?? '',
+                'is_finish' =>  $point >= 0.8 ? 1 : 0,
                 'times' => $times,
-                'time_start'=>$data['startTime'],
-                'time_end'=>$data['endTime']
+                'time_start' => $data['startTime'],
+                'time_end' => $data['endTime']
             ]);
-            $quizMember=QuizMember::where('id',$quiz_member)->first();
-            if($quizMember && $quizMember->is_finish==1){
-                $Member=Member::where('id',$member->id)->first();
-                if($Member){
-                    $Member->number_passes= $Member->number_passes+1;
+            $quizMember = QuizMember::where('id', $quiz_member)->first();
+            if ($quizMember && $quizMember->is_finish == 1) {
+                $Member = Member::where('id', $member->id)->first();
+                if ($Member) {
+                    $Member->number_passes = $Member->number_passes + 1;
                     $Member->save();
                 }
             }
-            $checkTimes=QuizMember::where('member_id',$member->id)
-            ->where('quiz_id',$data['quizId'])->where('is_finish',1)->get();
+            $checkTimes = QuizMember::where('member_id', $member->id)
+                ->where('quiz_id', $data['quizId'])->where('is_finish', 1)->get();
 
-            if($checkTimes && count($checkTimes)==1 && $quizMember->is_finish==1){
-                $Quiz=Quiz::where('id',$data['quizId'])->first();
-                $Member=Member::where('id',$member->id)->first();
-                if($Member)
-                {
-                    $pointAward=isset( $Quiz)?$Quiz->pointAward:0;
-                    $Member->points= $Member->points+$pointAward;
+            if ($checkTimes && count($checkTimes) == 1 && $quizMember->is_finish == 1) {
+                $Quiz = Quiz::where('id', $data['quizId'])->first();
+                $Member = Member::where('id', $member->id)->first();
+                if ($Member) {
+                    $pointAward = isset($Quiz) ? $Quiz->pointAward : 0;
+                    $Member->points = $Member->points + $pointAward;
                     $Member->save();
                 }
             }
@@ -174,8 +170,8 @@ class QuizController extends Controller
                 'data' => [
                     'total' => count($Question),
                     'result' => $result,
-                    'is_finish' =>  $point>=0.8?1:0,
-                    'percent'=>round($point*100),
+                    'is_finish' =>  $point >= 0.8 ? 1 : 0,
+                    'percent' => round($point * 100),
                 ],
                 "success" => "done",
                 // 'times' => $times
