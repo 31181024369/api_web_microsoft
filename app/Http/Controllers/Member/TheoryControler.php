@@ -18,19 +18,22 @@ class TheoryControler extends Controller
             $theOryCategory = TheOryCategory::with(['theories.quizzes.questions'])->get();
             $response = [];
             $member_id = Auth::guard('member')->user()?->id;
+
             foreach ($theOryCategory as $key => $item) {
                 $theories = $item->theories->map(function ($theory) use ($item, $member_id) {
                     $quiz = $theory->quizzes->first(function ($quiz) use ($item, $theory) {
                         return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
                     });
-                    $start = \Carbon\Carbon::createFromFormat('d/m/Y', $theory->created_at)->startOfDay();
+
+                    $start = \Carbon\Carbon::parse($theory->created_at)->format('d/m/Y');
+
                     $theoryData = [
                         'id' => $theory->theory_id,
                         'title' => $theory->title,
                         'friendly_url' => $theory->friendly_url,
                         'picture' => $theory->picture,
                         'short_description' => $theory->short_description,
-                        'create_at' => $theory->start,
+                        'created_at' => $start,
                     ];
 
                     if ($quiz) {

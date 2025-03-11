@@ -96,7 +96,8 @@ class GiftController extends Controller
         }
         return response()->json([
             'status' => true,
-            'data' => $gift
+            'data' => $gift,
+            //'display' => $gift->display ? '1' : '0'
         ], 200);
     }
 
