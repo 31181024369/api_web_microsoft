@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Member;
 
 use App\Models\TheOryCategory;
 use App\Models\TheOry;
+use App\Models\Quiz;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -105,16 +106,10 @@ class TheoryControler extends Controller
                 ], 404);
             }
 
-            // if (!$theory->display || !$theory->category->display) {
-            //     return response()->json([
-            //         'status' => false,
-            //         'error' => 'Bài học này hiện không khả dụng'
-            //     ], 403);
-            // }
-            if (!$theory->display || !$theory->category->display || !$theory->quizzes->first()->display) {
+            if (!$theory->display || !$theory->category->display) {
                 return response()->json([
                     'status' => false,
-                    'error' => 'Bài thi hoặc bài học này hiện không khả dụng'
+                    'error' => 'Bài thi này hiện không khả dụng'
                 ], 403);
             }
 
@@ -238,6 +233,55 @@ class TheoryControler extends Controller
                 'status' => false,
                 'message' => 'Vui lòng đăng nhập để xem lịch sử'
             ], 401);
+        }
+    }
+
+    public function checkQuiz(Request $request)
+    {
+        try {
+            $path = $request->path();
+            $segments = explode('/', $path);
+            $friendlyUrl = end($segments);
+
+            $quiz = Quiz::where('friendly_url', $friendlyUrl)
+                ->with(['theory' => function ($query) {
+                    $query->select('theory_id', 'title', 'display')
+                        ->with('category:cat_id,display');
+                }])
+                ->first();
+
+            if (!$quiz) {
+                return response()->json([
+                    'status' => false,
+                    'error' => 'Không tìm thấy bài kiểm tra'
+                ], 404);
+            }
+
+            if (!$quiz->display || !$quiz->theory->display || !$quiz->theory->category->display) {
+                return response()->json([
+                    'status' => false,
+                    'error' => 'Bài kiểm tra này hiện không khả dụng'
+                ], 403);
+            }
+
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'quiz' => [
+                        'id' => $quiz->id,
+                        'name' => $quiz->name,
+                        'theory_id' => $quiz->theory_id,
+                        'friendly_url' => $quiz->friendly_url,
+                        'time' => $quiz->time,
+                        'pointAward' => $quiz->pointAward
+                    ]
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

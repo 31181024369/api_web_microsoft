@@ -33,7 +33,7 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
 
 //Member
 Route::group(['prefix' => 'member'], function () {
-    Route::get('show-product', [App\Http\Controllers\Member\ProductController::class,'showUser']);
+    Route::get('show-product', [App\Http\Controllers\Member\ProductController::class, 'showUser']);
 
     Route::get('/show-quiz', [App\Http\Controllers\Member\QuizController::class, 'showQuiz']);
     Route::get('/show-quiz-detail/{slug}', [App\Http\Controllers\Member\QuizController::class, 'showDetailQuiz']);
@@ -74,6 +74,8 @@ Route::get('member/gift-history', [App\Http\Controllers\Member\GiftHiststoryCont
 
 //Quiz History Member
 Route::get('member/quiz-history', [App\Http\Controllers\Member\QuizHistoryController::class, 'index']);
+//Quiz member 
+Route::get('/quiz/{friendly_url}', [App\Http\Controllers\Member\TheoryControler::class, 'checkQuiz']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
