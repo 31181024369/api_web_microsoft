@@ -96,22 +96,38 @@ class TheoryControler extends Controller
             $friendlyUrl = end($segments);
 
             $theory = TheOry::where('friendly_url', $friendlyUrl)
-                ->where('display', 1)
-                ->whereHas('category', function ($q) {
-                    $q->where('display', 1);
-                })
-                ->with(['quizzes' => function ($query) {
-                    $query->where('display', 1)
-                        ->select('id', 'theory_id', 'friendly_url', 'name')
-                        ->with('questions:id,quiz_id');
-                }])
-                ->select('theory_id', 'title', 'description', 'short_description', 'friendly_url', 'picture', 'cat_id')
-                ->firstOrFail();
+                ->first();
+
+            if (!$theory) {
+                return response()->json([
+                    'status' => false,
+                    'error' => 'Không tìm thấy bài học'
+                ], 404);
+            }
+
+            // if (!$theory->display || !$theory->category->display) {
+            //     return response()->json([
+            //         'status' => false,
+            //         'error' => 'Bài học này hiện không khả dụng'
+            //     ], 403);
+            // }
+            if (!$theory->display || !$theory->category->display || !$theory->quizzes->first()->display) {
+                return response()->json([
+                    'status' => false,
+                    'error' => 'Bài thi hoặc bài học này hiện không khả dụng'
+                ], 403);
+            }
+
+            $theory->load(['quizzes' => function ($query) {
+                $query->where('display', 1)
+                    ->select('id', 'theory_id', 'friendly_url', 'name')
+                    ->with('questions:id,quiz_id');
+            }]);
 
             if ($theory->quizzes->isEmpty()) {
                 return response()->json([
                     'status' => false,
-                    'error' => 'Không tìm thấy bài học'
+                    'error' => 'Bài kiểm tra không khả dụng'
                 ], 404);
             }
 
@@ -139,11 +155,6 @@ class TheoryControler extends Controller
             ];
 
             return response()->json($response, 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'status' => false,
-                'error' => 'Không tìm thấy bài học'
-            ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
