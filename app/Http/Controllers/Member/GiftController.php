@@ -37,9 +37,9 @@ class GiftController extends Controller
 
             $response = [
                 'status' => true,
-                'list' => [
+                'data' => [
                     'member_points' => $memberPoints,
-                    'data' => $gifts->items(),
+                    'list' => $gifts->items(),
                     'pagination' => [
                         'current_page' => $gifts->currentPage(),
                         'total_pages' => $gifts->lastPage(),

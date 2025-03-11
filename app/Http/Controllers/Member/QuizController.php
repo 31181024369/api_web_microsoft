@@ -60,9 +60,11 @@ class QuizController extends Controller
     public function submitQuiz(Request $request)
     {
 
+
         try {
             $member = Auth::guard('member')->user();
             $data = $request->all();
+
 
             $result = 0;
 
