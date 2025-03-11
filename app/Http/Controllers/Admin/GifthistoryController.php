@@ -88,7 +88,7 @@ class GifthistoryController extends Controller
                     'remaining_points' => $item->remaining_points,
                     'redeemed_at' => $item->redeemed_at,
                     'status' => $item->is_confirmed ? 'Đã xác nhận' : 'Chờ xác nhận',
-                    'confirm_at' => $item->confirmed_at?->format('d/m/Y H:i:s')
+                    'confirm_at' => $item->create_at?->format('d/m/Y H:i:s')
                 ];
             });
 
