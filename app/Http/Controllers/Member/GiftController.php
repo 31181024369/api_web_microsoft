@@ -37,14 +37,16 @@ class GiftController extends Controller
 
             $response = [
                 'status' => true,
-                'member_points' => $memberPoints,
-                'list' => $gifts->items(),
-                'pagination' => [
-                    'current_page' => $gifts->currentPage(),
-                    'total_pages' => $gifts->lastPage(),
-                    'per_page' => $gifts->perPage(),
-                    'total' => $gifts->total(),
-                ],
+                'list' => [
+                    'member_points' => $memberPoints,
+                    'data' => $gifts->items(),
+                    'pagination' => [
+                        'current_page' => $gifts->currentPage(),
+                        'total_pages' => $gifts->lastPage(),
+                        'per_page' => $gifts->perPage(),
+                        'total' => $gifts->total(),
+                    ],
+                ]
             ];
 
             return response()->json($response, 200);
