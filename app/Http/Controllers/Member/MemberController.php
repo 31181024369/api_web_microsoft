@@ -88,6 +88,7 @@ class MemberController extends Controller
                     Trân trọng.<br>
                     Đội ngũ Microsoft<br>'
                 ];
+                $to=$email;
                 Mail::to($to)
                 ->send(new Notification($data));
 
