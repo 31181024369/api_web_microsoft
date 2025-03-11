@@ -15,7 +15,7 @@ class Gift extends Model
     ];
 
     protected $casts = [
-        'display' => 'boolean',
+        'display' => 'integer',
         'reward_point' => 'integer'
     ];
 }
