@@ -15,15 +15,26 @@ class TheoryControler extends Controller
     public function index()
     {
         try {
-            $theOryCategory = TheOryCategory::with(['theories.quizzes.questions'])->get();
+            $theOryCategory = TheOryCategory::where('display', 1)
+                ->with(['theories' => function ($q) {
+                    $q->where('display', 1)->with(['quizzes' => function ($q) {
+                        $q->where('display', 1)->with('questions');
+                    }]);
+                }])
+                ->get();
+
             $response = [];
             $member_id = Auth::guard('member')->user()?->id;
 
-            foreach ($theOryCategory as $key => $item) {
+            foreach ($theOryCategory as $item) {
                 $theories = $item->theories->map(function ($theory) use ($item, $member_id) {
                     $quiz = $theory->quizzes->first(function ($quiz) use ($item, $theory) {
                         return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
                     });
+
+                    if (!$quiz) {
+                        return null;
+                    }
 
                     $start = \Carbon\Carbon::parse($theory->created_at)->format('d/m/Y');
 
@@ -36,32 +47,28 @@ class TheoryControler extends Controller
                         'created_at' => $start,
                     ];
 
-                    if ($quiz) {
-                        $hasAttempted = QuizMember::where('member_id', $member_id)
-                            ->where('quiz_id', $quiz->id)
-                            ->exists();
+                    $hasAttempted = QuizMember::where('member_id', $member_id)
+                        ->where('quiz_id', $quiz->id)
+                        ->exists();
 
-                        $is_finish = QuizMember::where('member_id', $member_id)
-                            ->where('quiz_id', $quiz->id)
-                            ->where('is_finish', 1)
-                            ->exists();
+                    $is_finish = QuizMember::where('member_id', $member_id)
+                        ->where('quiz_id', $quiz->id)
+                        ->where('is_finish', 1)
+                        ->exists();
 
-                        $theoryData['quiz'] = [
-                            'id' => $quiz->id,
-                            'name' => $quiz->name,
-                            'friendly_url' => $quiz->friendly_url,
-                            'time' => $quiz->time,
-                            'pointAward' => $quiz->pointAward,
-                            'question_count' => $quiz->questions->count(),
-                            'has_attempted' => $hasAttempted,
-                            'is_finish' => $is_finish
-                        ];
-                    }
+                    $theoryData['quiz'] = [
+                        'id' => $quiz->id,
+                        'name' => $quiz->name,
+                        'friendly_url' => $quiz->friendly_url,
+                        'time' => $quiz->time,
+                        'pointAward' => $quiz->pointAward,
+                        'question_count' => $quiz->questions->count(),
+                        'has_attempted' => $hasAttempted,
+                        'is_finish' => $is_finish
+                    ];
 
                     return $theoryData;
-                })->filter(function ($theory) {
-                    return isset($theory['quiz']);
-                })->values();
+                })->filter()->values();
 
                 if ($theories->isNotEmpty()) {
                     $response[] = [
@@ -89,12 +96,24 @@ class TheoryControler extends Controller
             $friendlyUrl = end($segments);
 
             $theory = TheOry::where('friendly_url', $friendlyUrl)
+                ->where('display', 1)
+                ->whereHas('category', function ($q) {
+                    $q->where('display', 1);
+                })
                 ->with(['quizzes' => function ($query) {
-                    $query->select('id', 'theory_id', 'friendly_url', 'name')
+                    $query->where('display', 1)
+                        ->select('id', 'theory_id', 'friendly_url', 'name')
                         ->with('questions:id,quiz_id');
                 }])
                 ->select('theory_id', 'title', 'description', 'short_description', 'friendly_url', 'picture', 'cat_id')
                 ->firstOrFail();
+
+            if ($theory->quizzes->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'error' => 'Không tìm thấy bài học'
+                ], 404);
+            }
 
             $quiz = $theory->quizzes->first();
 
@@ -138,9 +157,16 @@ class TheoryControler extends Controller
         try {
             $member_id = Auth::guard('member')->id();
 
-            $theories = Theory::whereHas('quizzes')
+            $theories = Theory::where('display', 1)
+                ->whereHas('category', function ($q) {
+                    $q->where('display', 1);
+                })
+                ->whereHas('quizzes', function ($q) {
+                    $q->where('display', 1);
+                })
                 ->with(['quizzes' => function ($query) {
-                    $query->select('id', 'theory_id', 'name', 'friendly_url', 'time', 'pointAward')
+                    $query->where('display', 1)
+                        ->select('id', 'theory_id', 'name', 'friendly_url', 'time', 'pointAward')
                         ->with('questions:id,quiz_id');
                 }])
                 ->select('theory_id', 'title', 'short_description', 'friendly_url', 'picture')
