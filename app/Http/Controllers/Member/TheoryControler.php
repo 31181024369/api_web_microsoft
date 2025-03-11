@@ -23,7 +23,7 @@ class TheoryControler extends Controller
                     $quiz = $theory->quizzes->first(function ($quiz) use ($item, $theory) {
                         return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
                     });
-                    $start = \Carbon\Carbon::createFromFormat('d/m/Y', $$theory->created_at)->startOfDay();
+                    $start = \Carbon\Carbon::createFromFormat('d/m/Y', $theory->created_at)->startOfDay();
                     $theoryData = [
                         'id' => $theory->theory_id,
                         'title' => $theory->title,
