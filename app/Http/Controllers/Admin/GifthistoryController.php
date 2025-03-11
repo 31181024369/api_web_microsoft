@@ -30,11 +30,15 @@ class GifthistoryController extends Controller
                     }
 
                     if ($startTime && $endTime) {
-                        $query->whereBetween('redeemed_at', [$startTime, $endTime]);
+                        $start = \Carbon\Carbon::createFromFormat('d/m/Y', $startTime)->startOfDay();
+                        $end = \Carbon\Carbon::createFromFormat('d/m/Y', $endTime)->endOfDay();
+                        $query->whereBetween('redeemed_at', [$start, $end]);
                     } elseif ($startTime) {
-                        $query->whereDate('redeemed_at', '>=', $startTime);
+                        $start = \Carbon\Carbon::createFromFormat('d/m/Y', $startTime)->startOfDay();
+                        $query->whereDate('redeemed_at', '>=', $start);
                     } elseif ($endTime) {
-                        $query->whereDate('redeemed_at', '<=', $endTime);
+                        $end = \Carbon\Carbon::createFromFormat('d/m/Y', $endTime)->endOfDay();
+                        $query->whereDate('redeemed_at', '<=', $end);
                     }
                 });
             }
