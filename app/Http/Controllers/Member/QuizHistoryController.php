@@ -101,12 +101,12 @@ class QuizHistoryController extends Controller
 
             $response = [
                 'status' => true,
-                'list' => [
+                'data' => [
                     'summary' => [
                         'total_attempt' => (int)$quizCounts->total_attempted,
                         'total_complete' => (int)$quizCounts->total_completed
                     ],
-                    'data' => $formattedHistory->values(),
+                    'list' => $formattedHistory->values(),
                     'pagination' => [
                         'current_page' => $quizHistory->currentPage(),
                         'total_pages' => $quizHistory->lastPage(),
