@@ -42,6 +42,7 @@ class TheoryControler extends Controller
                             ->exists();
 
                         $is_finish = QuizMember::where('member_id', $member_id)
+                            ->where('quiz_id', $quiz->id)
                             ->where('is_finish', 1)
                             ->exists();
 
