@@ -34,12 +34,12 @@ class GiftHiststoryController extends Controller
 
             $response = [
                 'status' => true,
-                'data' => [
+                'list' => [
                     'member_points' => [
                         'current' => $member->points,
                         'used' => $member->used_points ?? 0
                     ],
-                    'list' => $filteredItems->values(),
+                    'data' => $filteredItems->values(),
                     'pagination' => [
                         'current_page' => $histories->currentPage(),
                         'total_pages' => $histories->lastPage(),
