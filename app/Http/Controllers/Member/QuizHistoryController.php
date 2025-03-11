@@ -60,8 +60,12 @@ class QuizHistoryController extends Controller
                 if ($item->time_start) {
                     try {
                         $startTime = is_numeric($item->time_start)
-                            ? \Carbon\Carbon::createFromTimestamp((int)($item->time_start / 1000))->format('d/m/Y H:i:s')
-                            : \Carbon\Carbon::parse($item->time_start)->format('d/m/Y H:i:s');
+                            ? \Carbon\Carbon::createFromTimestamp((int)($item->time_start / 1000))
+                            ->setTimezone('Asia/Ho_Chi_Minh')
+                            ->format('d/m/Y H:i:s')
+                            : \Carbon\Carbon::parse($item->time_start)
+                            ->setTimezone('Asia/Ho_Chi_Minh')
+                            ->format('d/m/Y H:i:s');
                     } catch (\Exception $e) {
                         $startTime = null;
                     }
