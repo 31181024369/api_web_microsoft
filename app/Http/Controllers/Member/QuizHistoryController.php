@@ -24,6 +24,12 @@ class QuizHistoryController extends Controller
             }
 
             $perPage = $request->input('per_page', 10);
+            $quizCounts = QuizMember::where('member_id', $member->id)
+                ->select(
+                    DB::raw('COUNT(*) as total_attempted'),
+                    DB::raw('SUM(CASE WHEN is_finish = 1 THEN 1 ELSE 0 END) as total_completed')
+                )
+                ->first();
 
             $quizHistory = QuizMember::where('quiz_member.member_id', $member->id)
                 ->with(['quizzes' => function ($query) {
@@ -92,6 +98,10 @@ class QuizHistoryController extends Controller
             $response = [
                 'status' => true,
                 'data' => [
+                    'summary' => [
+                        'total_attempt' => (int)$quizCounts->total_attempted,
+                        'total_complete' => (int)$quizCounts->total_completed
+                    ],
                     'list' => $formattedHistory->values(),
                     'pagination' => [
                         'current_page' => $quizHistory->currentPage(),
