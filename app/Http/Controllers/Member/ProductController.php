@@ -9,7 +9,7 @@ class ProductController extends Controller
 {
     public function showUser(){
         try{
-            $Product=Product::orderBy('product_id','desc')->take(7)->get();
+            $Product=Product::orderBy('product_id','desc')->where('display',1)->take(7)->get();
             return response()->json([
                 'status'=>true,
                 'data'=>$Product
