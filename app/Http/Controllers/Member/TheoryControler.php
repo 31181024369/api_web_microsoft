@@ -118,13 +118,6 @@ class TheoryControler extends Controller
                     ->with('questions:id,quiz_id');
             }]);
 
-            if ($theory->quizzes->isEmpty()) {
-                return response()->json([
-                    'status' => false,
-                    'error' => 'Bài kiểm tra không khả dụng'
-                ], 404);
-            }
-
             $quiz = $theory->quizzes->first();
 
             $response = [
