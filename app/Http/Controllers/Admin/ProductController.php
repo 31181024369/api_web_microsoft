@@ -182,4 +182,33 @@ class ProductController extends Controller
             ], 500);
         }
     }
+    public function deleteAll(Request $request)
+    {
+        $arr =$request->data;
+        try {
+
+                if($arr)
+                {
+                    foreach ($arr as $item) {
+                        Product::Find($item)->delete();
+                    }
+                }
+                else
+                {
+                    return response()->json([
+                    'status'=>false,
+                    ],422);
+                }
+                return response()->json([
+                    'status'=>true,
+                ],200);
+        } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
+            $response = [
+                'status' => false,
+                'error' => $errorMessage
+            ];
+            return response()->json($response, 500);
+        }
+    }
 }
