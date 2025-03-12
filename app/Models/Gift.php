@@ -12,6 +12,7 @@ class Gift extends Model
         'reward_point',
         'picture',
         'display',
+        'quantity',
         'create_at'
     ];
 
