@@ -118,7 +118,7 @@ class TheoryControler extends Controller
                 ], 403);
             }
 
-            if ($theory->quizzes->isEmpty()) {
+            if (!$theory->quiz->display) {
                 return response()->json([
                     'status' => false,
                     'error' => 'Bài kiểm tra không khả dụng'
