@@ -97,6 +97,11 @@ class TheoryControler extends Controller
             $friendlyUrl = end($segments);
 
             $theory = TheOry::where('friendly_url', $friendlyUrl)
+                ->with(['category', 'quizzes' => function ($query) {
+                    $query->where('display', 1)
+                        ->select('id', 'theory_id', 'friendly_url', 'name', 'display')
+                        ->with('questions:id,quiz_id');
+                }])
                 ->first();
 
             if (!$theory) {
@@ -106,18 +111,19 @@ class TheoryControler extends Controller
                 ], 404);
             }
 
-            if (!$theory->display || !$theory->category->display || !$theory->quizzes->display) {
+            if (!$theory->display || !$theory->category->display) {
                 return response()->json([
                     'status' => false,
-                    'error' => 'Bài thi này hiện không khả dụng'
+                    'error' => 'Bài học này hiện không khả dụng'
                 ], 403);
             }
 
-            $theory->load(['quizzes' => function ($query) {
-                $query->where('display', 1)
-                    ->select('id', 'theory_id', 'friendly_url', 'name')
-                    ->with('questions:id,quiz_id');
-            }]);
+            if ($theory->quizzes->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'error' => 'Bài kiểm tra không khả dụng'
+                ], 403);
+            }
 
             $quiz = $theory->quizzes->first();
 
@@ -146,7 +152,7 @@ class TheoryControler extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
-                'error' => $e->getMessage()
+                'error' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ], 500);
         }
     }
