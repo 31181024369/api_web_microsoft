@@ -18,9 +18,14 @@ class TheoryControler extends Controller
         try {
             $theOryCategory = TheOryCategory::where('display', 1)
                 ->with(['theories' => function ($q) {
-                    $q->where('display', 1)->with(['quizzes' => function ($q) {
-                        $q->where('display', 1)->with('questions');
-                    }]);
+                    $q->where('display', 1)
+                        ->whereHas('quizzes', function ($query) {
+                            $query->where('display', 1);
+                        })
+                        ->with(['quizzes' => function ($q) {
+                            $q->where('display', 1)
+                                ->with('questions');
+                        }]);
                 }])
                 ->get();
 
@@ -30,7 +35,9 @@ class TheoryControler extends Controller
             foreach ($theOryCategory as $item) {
                 $theories = $item->theories->map(function ($theory) use ($item, $member_id) {
                     $quiz = $theory->quizzes->first(function ($quiz) use ($item, $theory) {
-                        return $quiz->cat_id == $item->cat_id && $quiz->theory_id == $theory->theory_id;
+                        return $quiz->cat_id == $item->cat_id &&
+                            $quiz->theory_id == $theory->theory_id &&
+                            $quiz->display == 1;
                     });
 
                     if (!$quiz) {
@@ -38,6 +45,7 @@ class TheoryControler extends Controller
                     }
 
                     $start = \Carbon\Carbon::parse($theory->created_at)->format('d/m/Y');
+
 
                     $theoryData = [
                         'id' => $theory->theory_id,
