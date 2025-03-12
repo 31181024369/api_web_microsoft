@@ -98,8 +98,7 @@ class TheoryControler extends Controller
 
             $theory = TheOry::where('friendly_url', $friendlyUrl)
                 ->with(['category', 'quizzes' => function ($query) {
-                    $query->where('display', 1)
-                        ->select('id', 'theory_id', 'friendly_url', 'name', 'display')
+                    $query->select('id', 'theory_id', 'friendly_url', 'name', 'display')
                         ->with('questions:id,quiz_id');
                 }])
                 ->first();
@@ -118,7 +117,16 @@ class TheoryControler extends Controller
                 ], 403);
             }
 
-            $quiz = $theory->quizzes->first();
+            $displayedQuiz = $theory->quizzes->firstWhere('display', 1);
+
+            if (!$displayedQuiz) {
+                return response()->json([
+                    'status' => false,
+                    'error' => 'Bài học này hiện không khả dụng'
+                ], 403);
+            }
+
+            //$quiz = $theory->quizzes->first();
 
             $response = [
                 'status' => true,
@@ -132,12 +140,12 @@ class TheoryControler extends Controller
                         'picture' => $theory->picture,
                         'cat_id' => $theory->cat_id,
                     ],
-                    'quiz' => $quiz ? [
-                        'id' => $quiz->id,
-                        'name' => $quiz->name,
-                        'friendly_url' => $quiz->friendly_url,
-                        'question_count' => $quiz->questions->count()
-                    ] : null
+                    'quiz' => [
+                        'id' => $displayedQuiz->id,
+                        'name' => $displayedQuiz->name,
+                        'friendly_url' => $displayedQuiz->friendly_url,
+                        'question_count' => $displayedQuiz->questions->count()
+                    ]
                 ]
             ];
 
