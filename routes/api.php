@@ -75,7 +75,6 @@ Route::get('member/gift-history', [App\Http\Controllers\Member\GiftHiststoryCont
 //Quiz History Member
 Route::get('member/quiz-history', [App\Http\Controllers\Member\QuizHistoryController::class, 'index']);
 //Quiz member 
-Route::get('/quiz/{friendly_url}', [App\Http\Controllers\Member\TheoryControler::class, 'checkQuiz']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
