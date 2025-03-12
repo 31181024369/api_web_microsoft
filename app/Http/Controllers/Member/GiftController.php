@@ -70,6 +70,17 @@ class GiftController extends Controller
                 ], 401);
             }
 
+            $hasRedeemed = GiftHistory::where('member_id', $member->id)
+                ->where('gift_id', $id)
+                ->exists();
+
+            if ($hasRedeemed) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Bạn chỉ có thể đổi phần quà này một lần'
+                ], 400);
+            }
+
             $gift = Gift::lockForUpdate()->findOrFail($id);
 
             if ($gift->quantity <= 0) {
