@@ -77,7 +77,7 @@ class GiftController extends Controller
             if ($hasRedeemed) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Bạn chỉ có thể đổi phần quà này một lần'
+                    'message' => 'Bạn chỉ có thể đổi quà này một lần'
                 ], 400);
             }
 
