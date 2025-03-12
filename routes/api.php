@@ -50,23 +50,24 @@ Route::group(['prefix' => 'member'], function () {
     Route::get('show-advertise', [App\Http\Controllers\Member\AdvertiseController::class, 'showAdvertise']);
 });
 
-//Theory Category Admin
-Route::resource('theory-category', App\Http\Controllers\Admin\TheOryCategoryController::class);
-Route::delete('theory-categorys/delete', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'delete']);
-Route::get('theory-categories/show', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'showTheoryCategory']);
+Route::group(['middleware' => 'admin'], function () {
+    //Theory Category Admin
+    Route::resource('theory-category', App\Http\Controllers\Admin\TheOryCategoryController::class);
+    Route::delete('theory-categorys/delete', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'delete']);
+    Route::get('theory-categories/show', [App\Http\Controllers\Admin\TheOryCategoryController::class, 'showTheoryCategory']);
 
-// Theory Admin
-Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
-Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
+    // Theory Admin
+    Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
+    Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
 
-//Gift Admin
-Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
-Route::delete('gifts/delete', [App\Http\Controllers\Admin\GiftController::class, 'delete']);
+    //Gift Admin
+    Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
+    Route::delete('gifts/delete', [App\Http\Controllers\Admin\GiftController::class, 'delete']);
 
-//Gift History Admin
-Route::get('gift-history', [App\Http\Controllers\Admin\GifthistoryController::class, 'index']);
-Route::patch('gifts/{id}/confirm', [App\Http\Controllers\Admin\GifthistoryController::class, 'confirm']);
-
+    //Gift History Admin
+    Route::get('gift-history', [App\Http\Controllers\Admin\GifthistoryController::class, 'index']);
+    Route::patch('gifts/{id}/confirm', [App\Http\Controllers\Admin\GifthistoryController::class, 'confirm']);
+});
 //Gift Member
 Route::get('gift-member', [App\Http\Controllers\Member\GiftController::class, 'index']);
 Route::post('gifts/{id}/redeem', [App\Http\Controllers\Member\GiftController::class, 'redeem']);
