@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Log;
 
 class GiftController extends Controller
 {
-
     public function index(Request $request)
     {
         try {
@@ -34,7 +33,6 @@ class GiftController extends Controller
                 $gift->makeHidden(['created_at', 'updated_at']);
                 $gift->can_redeem = ($memberPoints - $gift->reward_point) >= 0 && $gift->quantity > 0;
                 $gift->is_available = $gift->quantity > 0;
-                $gift->status_text = $gift->quantity > 0 ? 'Còn quà' : 'Hết quà';
                 return $gift;
             });
 
@@ -72,7 +70,14 @@ class GiftController extends Controller
                 ], 401);
             }
 
-            $gift = Gift::findOrFail($id);
+            $gift = Gift::lockForUpdate()->findOrFail($id);
+
+            if ($gift->quantity <= 0) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Phần quà này hiện tại đã hết'
+                ], 400);
+            }
 
             if ($member->points < $gift->reward_point) {
                 return response()->json([
@@ -89,6 +94,8 @@ class GiftController extends Controller
             $updatedMember = null;
 
             DB::transaction(function () use ($member, $gift, &$updatedMember) {
+                $gift->decrement('quantity');
+
                 Member::where('id', $member->id)
                     ->update([
                         'points' => DB::raw('points - ' . $gift->reward_point),
@@ -102,9 +109,10 @@ class GiftController extends Controller
                     'remaining_points' => $member->points - $gift->reward_point,
                     'redeemed_at' => now()
                 ]);
-                //$updatedMember = Member::find($member->id);
             });
+
             $updatedMember = Member::find($member->id);
+
             return response()->json([
                 'status' => true,
                 'message' => 'Đổi quà thành công',
