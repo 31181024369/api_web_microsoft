@@ -18,6 +18,7 @@ class Gift extends Model
 
     protected $casts = [
         'display' => 'integer',
-        'reward_point' => 'integer'
+        'reward_point' => 'integer',
+        'quantity' => 'integer',
     ];
 }

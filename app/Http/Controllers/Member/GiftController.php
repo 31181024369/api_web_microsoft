@@ -26,13 +26,15 @@ class GiftController extends Controller
             $perPage = $request->input('per_page', 20);
 
             $gifts = $query->where('display', 1)
-                ->orderBy('reward_point', 'asc')
+                ->orderBy('reward_point', 'desc')
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
             $gifts->through(function ($gift) use ($memberPoints) {
                 $gift->makeHidden(['created_at', 'updated_at']);
-                $gift->can_redeem = ($memberPoints - $gift->reward_point) >= 0;
+                $gift->can_redeem = ($memberPoints - $gift->reward_point) >= 0 && $gift->quantity > 0;
+                $gift->is_available = $gift->quantity > 0;
+                $gift->status_text = $gift->quantity > 0 ? 'Còn quà' : 'Hết quà';
                 return $gift;
             });
 
