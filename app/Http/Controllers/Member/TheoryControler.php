@@ -111,17 +111,10 @@ class TheoryControler extends Controller
                 ], 404);
             }
 
-            if (!$theory->display || !$theory->category->display) {
+            if (!$theory->display || !$theory->category->display ) {
                 return response()->json([
                     'status' => false,
                     'error' => 'Bài học này hiện không khả dụng'
-                ], 403);
-            }
-
-            if ($theory->quizzes->isEmpty()) {
-                return response()->json([
-                    'status' => false,
-                    'error' => 'Bài kiểm tra không khả dụng'
                 ], 403);
             }
 

@@ -34,7 +34,14 @@ class QuizController extends Controller
     {
         try {
             $Quiz = Quiz::where('friendly_url', $slug)->first();
-            $Question = $Question = Question::with('AnswerUser')->where("quiz_id", $Quiz->id)->paginate(10);
+            $Question = Question::with('AnswerUser')->where("quiz_id", $Quiz->id)->paginate(10);
+            if (!$Quiz->display || !$Quiz->category->display) {
+                return response()->json([
+                    'status' => false,
+                    'error' => 'Bài học này hiện không khả dụng'
+                ], 403);
+            }
+
             if ($Quiz) {
                 return response()->json([
                     'status' => true,

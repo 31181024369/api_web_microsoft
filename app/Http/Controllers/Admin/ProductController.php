@@ -190,7 +190,7 @@ class ProductController extends Controller
                 if($arr)
                 {
                     foreach ($arr as $item) {
-                        Product::Find($item)->delete();
+                        Product::where('product_id',$item)->first()->delete();
                     }
                 }
                 else
