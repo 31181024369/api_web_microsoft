@@ -110,7 +110,7 @@ class TheoryControler extends Controller
                 ], 404);
             }
 
-            if (!$theory->display || !$theory->category->display ) {
+            if (!$theory->display || !$theory->category->display) {
                 return response()->json([
                     'status' => false,
                     'error' => 'Bài học này hiện không khả dụng'
@@ -125,8 +125,6 @@ class TheoryControler extends Controller
                     'error' => 'Bài học này hiện không khả dụng'
                 ], 403);
             }
-
-            //$quiz = $theory->quizzes->first();
 
             $response = [
                 'status' => true,
