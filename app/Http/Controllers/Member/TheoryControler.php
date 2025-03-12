@@ -118,13 +118,6 @@ class TheoryControler extends Controller
                 ], 403);
             }
 
-            if (!$theory->quiz->display) {
-                return response()->json([
-                    'status' => false,
-                    'error' => 'Bài kiểm tra không khả dụng'
-                ], 403);
-            }
-
             $quiz = $theory->quizzes->first();
 
             $response = [
