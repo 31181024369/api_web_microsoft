@@ -11,7 +11,8 @@ class Gift extends Model
         'description',
         'reward_point',
         'picture',
-        'display'
+        'display',
+        'create_at'
     ];
 
     protected $casts = [
