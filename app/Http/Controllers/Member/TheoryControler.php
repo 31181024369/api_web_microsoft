@@ -106,7 +106,7 @@ class TheoryControler extends Controller
                 ], 404);
             }
 
-            if (!$theory->display || !$theory->category->display) {
+            if (!$theory->display || !$theory->category->display || !$theory->quizzes->display) {
                 return response()->json([
                     'status' => false,
                     'error' => 'Bài thi này hiện không khả dụng'
@@ -118,13 +118,6 @@ class TheoryControler extends Controller
                     ->select('id', 'theory_id', 'friendly_url', 'name')
                     ->with('questions:id,quiz_id');
             }]);
-
-            if ($theory->quizzes->isEmpty()) {
-                return response()->json([
-                    'status' => false,
-                    'error' => 'Bài kiểm tra không khả dụng'
-                ], 404);
-            }
 
             $quiz = $theory->quizzes->first();
 

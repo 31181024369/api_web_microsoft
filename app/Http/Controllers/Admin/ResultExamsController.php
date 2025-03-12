@@ -12,6 +12,7 @@ use App\Models\QuizMember;
 use App\Models\History;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 class ResultExamsController extends Controller
 {
     /**
@@ -34,6 +35,24 @@ class ResultExamsController extends Controller
             }
 
             $QuizMember= $query->orderBy('id','desc')->paginate(10);
+            $QuizMember->getCollection()->transform(function ($item) {
+
+                $item->time_start = is_numeric($item->time_start)
+                ? \Carbon\Carbon::createFromTimestamp((int)($item->time_start / 1000))
+                ->setTimezone('Asia/Ho_Chi_Minh')
+                ->format('d/m/Y H:i:s')
+                : \Carbon\Carbon::parse($item->time_start)
+                ->setTimezone('Asia/Ho_Chi_Minh')
+                ->format('d/m/Y H:i:s');
+                $item->time_end =  is_numeric($item->time_end)
+                ? \Carbon\Carbon::createFromTimestamp((int)($item->time_end / 1000))
+                ->setTimezone('Asia/Ho_Chi_Minh')
+                ->format('d/m/Y H:i:s')
+                : \Carbon\Carbon::parse($item->time_end)
+                ->setTimezone('Asia/Ho_Chi_Minh')
+                ->format('d/m/Y H:i:s');;
+                return $item;
+            });
             return response()->json([
                 'status'=>true,
                 'data'=> $QuizMember
