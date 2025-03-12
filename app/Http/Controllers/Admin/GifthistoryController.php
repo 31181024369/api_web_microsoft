@@ -31,29 +31,42 @@ class GifthistoryController extends Controller
 
                     if ($startTime && $endTime) {
                         try {
-                            $start = \Carbon\Carbon::parse($startTime)->startOfDay();
-                            $end = \Carbon\Carbon::parse($endTime)->endOfDay();
-                            $query->whereBetween('redeemed_at', [$start, $end]);
+                            $start = \Carbon\Carbon::createFromTimestamp((int)$startTime)
+                                ->setTimezone('Asia/Ho_Chi_Minh')
+                                ->startOfDay();
+                            $end = \Carbon\Carbon::createFromTimestamp((int)$endTime)
+                                ->setTimezone('Asia/Ho_Chi_Minh')
+                                ->endOfDay();
+                            $query->whereBetween('created_at', [$start, $end]);
                         } catch (\Exception $e) {
-                            $start = \Carbon\Carbon::createFromFormat('d/m/Y', $startTime)->startOfDay();
-                            $end = \Carbon\Carbon::createFromFormat('d/m/Y', $endTime)->endOfDay();
-                            $query->whereBetween('redeemed_at', [$start, $end]);
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Invalid date format'
+                            ], 400);
                         }
                     } elseif ($startTime) {
                         try {
-                            $start = \Carbon\Carbon::parse($startTime)->startOfDay();
-                            $query->whereDate('redeemed_at', '>=', $start);
+                            $start = \Carbon\Carbon::createFromTimestamp((int)$startTime)
+                                ->setTimezone('Asia/Ho_Chi_Minh')
+                                ->startOfDay();
+                            $query->whereDate('created_at', '>=', $start);
                         } catch (\Exception $e) {
-                            $start = \Carbon\Carbon::createFromFormat('d/m/Y', $startTime)->startOfDay();
-                            $query->whereDate('redeemed_at', '>=', $start);
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Invalid start date format'
+                            ], 400);
                         }
                     } elseif ($endTime) {
                         try {
-                            $end = \Carbon\Carbon::parse($endTime)->endOfDay();
-                            $query->whereDate('redeemed_at', '<=', $end);
+                            $end = \Carbon\Carbon::createFromTimestamp((int)$endTime)
+                                ->setTimezone('Asia/Ho_Chi_Minh')
+                                ->endOfDay();
+                            $query->whereDate('created_at', '<=', $end);
                         } catch (\Exception $e) {
-                            $end = \Carbon\Carbon::createFromFormat('d/m/Y', $endTime)->endOfDay();
-                            $query->whereDate('redeemed_at', '<=', $end);
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Invalid end date format'
+                            ], 400);
                         }
                     }
                 });
