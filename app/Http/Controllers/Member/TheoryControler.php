@@ -249,7 +249,7 @@ class TheoryControler extends Controller
             if (!$category) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Danh mục không tồn tại hoặc không có bài học'
+                    'message' => 'Danh mục không hiện không khả dụng'
                 ], 404);
             }
 
