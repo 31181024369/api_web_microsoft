@@ -127,7 +127,7 @@ class GiftController extends Controller
                     'recipientName' => $member->username,
                     'giftName' => $gift->title,
                     'giftDescription' => $gift->description,
-                    'redeemTime' => now()->format('d/m/Y H:i:s'),
+                    'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
                     'rewardPoints' => $gift->reward_point,
                     'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.'
                 ];
