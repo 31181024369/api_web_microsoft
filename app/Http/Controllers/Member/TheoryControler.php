@@ -21,65 +21,68 @@ class TheoryControler extends Controller
             $theOryCategory = TheOryCategory::where('display', 1)
                 ->with(['theories' => function ($q) {
                     $q->where('display', 1)
-                        // Lấy các theory có quiz hợp lệ
                         ->whereHas('quizzes', function ($query) {
-                            $query->where('display', 1)
-                                ->whereColumn('theory_id', 'theories.theory_id')
-                                ->whereColumn('cat_id', 'theories.cat_id');
+                            $query->where('display', 1);
                         })
-                        // Load quiz và câu hỏi
                         ->with(['quizzes' => function ($q) {
                             $q->where('display', 1)
                                 ->select('id', 'theory_id', 'cat_id', 'name', 'friendly_url', 'time', 'pointAward', 'display')
-                                ->with('questions:id,quiz_id');
+                                ->with('questions:id,quiz_id')
+                                ->limit(1);
                         }])
                         ->select('theory_id', 'cat_id', 'title', 'friendly_url', 'picture', 'short_description', 'created_at')
                         ->orderBy('theory_id', 'desc')
-                        ->limit(10); // Giới hạn 10 theories mỗi category
+                        ->take(10);
                 }])
                 ->get();
 
             $response = [];
 
             foreach ($theOryCategory as $category) {
-                $theories = $category->theories->map(function ($theory) use ($member_id) {
-                    $quiz = $theory->quizzes->first();
+                $theories = $category->theories
+                    ->filter(function ($theory) {
+                        return $theory->quizzes->isNotEmpty();
+                    })
+                    ->map(function ($theory) use ($member_id) {
+                        $quiz = $theory->quizzes->first();
 
-                    if (!$quiz) return null;
+                        if (!$quiz) return null;
 
-                    $hasAttempted = false;
-                    $is_finish = false;
+                        $hasAttempted = false;
+                        $is_finish = false;
 
-                    if ($member_id) {
-                        $quizMember = QuizMember::where('member_id', $member_id)
-                            ->where('quiz_id', $quiz->id)
-                            ->first();
+                        if ($member_id) {
+                            $quizMember = QuizMember::where('member_id', $member_id)
+                                ->where('quiz_id', $quiz->id)
+                                ->first();
 
-                        if ($quizMember) {
-                            $hasAttempted = true;
-                            $is_finish = $quizMember->is_finish;
+                            if ($quizMember) {
+                                $hasAttempted = true;
+                                $is_finish = $quizMember->is_finish;
+                            }
                         }
-                    }
 
-                    return [
-                        'id' => $theory->theory_id,
-                        'title' => $theory->title,
-                        'friendly_url' => $theory->friendly_url,
-                        'picture' => $theory->picture,
-                        'short_description' => $theory->short_description,
-                        'created_at' => \Carbon\Carbon::parse($theory->created_at)->format('d/m/Y'),
-                        'quiz' => [
-                            'id' => $quiz->id,
-                            'name' => $quiz->name,
-                            'friendly_url' => $quiz->friendly_url,
-                            'time' => $quiz->time,
-                            'pointAward' => $quiz->pointAward,
-                            'question_count' => $quiz->questions->count(),
-                            'has_attempted' => $hasAttempted,
-                            'is_finish' => $is_finish
-                        ]
-                    ];
-                })->filter()->values();
+                        return [
+                            'id' => $theory->theory_id,
+                            'title' => $theory->title,
+                            'friendly_url' => $theory->friendly_url,
+                            'picture' => $theory->picture,
+                            'short_description' => $theory->short_description,
+                            'created_at' => \Carbon\Carbon::parse($theory->created_at)->format('d/m/Y'),
+                            'quiz' => [
+                                'id' => $quiz->id,
+                                'name' => $quiz->name,
+                                'friendly_url' => $quiz->friendly_url,
+                                'time' => $quiz->time,
+                                'pointAward' => $quiz->pointAward,
+                                'question_count' => $quiz->questions->count(),
+                                'has_attempted' => $hasAttempted,
+                                'is_finish' => $is_finish
+                            ]
+                        ];
+                    })
+                    ->take(10)
+                    ->values();
 
                 if ($theories->isNotEmpty()) {
                     $response[] = [
