@@ -27,7 +27,7 @@ class GiftController extends Controller
             $perPage = $request->input('per_page', 20);
 
             $gifts = $query->where('display', 1)
-                ->orderBy('reward_point', 'desc')
+                ->orderBy('reward_point', 'asc')
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
@@ -106,7 +106,7 @@ class GiftController extends Controller
 
             $updatedMember = null;
 
-            DB::transaction(function () use ($member, $gift, &$updatedMember, $request) {
+            DB::transaction(function () use ($member, $gift, &$updatedMember,$request) {
                 $gift->decrement('quantity');
 
                 Member::where('id', $member->id)
@@ -144,7 +144,8 @@ class GiftController extends Controller
                     'phoneNumber' => $request->numberPhone
                 ];
 
-                Mail::to($member->email)->send(new GiftRedeemMail($emailData));
+
+                // Mail::to($member->email)->send(new GiftRedeemMail($emailData));
             });
 
             $updatedMember = Member::find($member->id);

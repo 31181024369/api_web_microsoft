@@ -30,11 +30,7 @@
         <li><strong>Mô tả:</strong> {{ $giftDescription }}</li>
         <li><strong>Thời gian đổi quà:</strong> {{ $redeemTime }}</li>
         <li><strong>Giá trị điểm thưởng:</strong> {{ $rewardPoints }} điểm</li>
-    </ul>
-
-    <h3>Thông tin giao hàng:</h3>
-    <ul>
-        <li><strong>Địa chỉ nhận hàng:</strong> {{ $address }}</li>
+        <li><strong>Địa chỉ:</strong> {{ $address }}</li>
         <li><strong>Số điện thoại:</strong> {{ $phoneNumber }}</li>
     </ul>
 
