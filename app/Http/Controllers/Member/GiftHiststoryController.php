@@ -28,6 +28,7 @@ class GiftHiststoryController extends Controller
             $perPage = $request->input('per_page', 5);
             $histories = $query->orderBy('id', 'desc')->paginate($perPage);
 
+
             $filteredItems = collect($histories->items())->filter(function ($item) {
                 return $item->gift !== null;
             });

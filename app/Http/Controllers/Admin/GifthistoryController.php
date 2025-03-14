@@ -116,6 +116,11 @@ class GifthistoryController extends Controller
                     'points_used' => $item->points_used,
                     'remaining_points' => $item->remaining_points,
                     'redeemed_at' => $item->redeemed_at,
+                    'cityAddress' => $item->cityAddress,
+                    'districtAddress' => $item->districtAddress,
+                    'wardAddress' => $item->wardAddress,
+                    'streetAddress' => $item->streetAddress,
+                    'numberPhone' => $item->numberPhone,
                     'status' => $item->is_confirmed ? 'Đã xác nhận' : 'Chờ xác nhận',
                     'confirm_at' => $item->redeemed_at?->format('d/m/Y H:i:s')
                 ];
@@ -168,6 +173,16 @@ class GifthistoryController extends Controller
                     'confirmed_at' => $giftHistory->confirmed_at->format('d/m/Y H:i:s')
                 ]
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    public function detail(Request $request, $id){
+        try{
+            return $id;
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,

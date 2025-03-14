@@ -66,6 +66,7 @@ Route::group(['middleware' => 'admin'], function () {
 
     //Gift History Admin
     Route::get('gift-history', [App\Http\Controllers\Admin\GifthistoryController::class, 'index']);
+    Route::get('detail-gift-history/{id}', [App\Http\Controllers\Admin\GifthistoryController::class, 'detail']);
     Route::patch('gifts/{id}/confirm', [App\Http\Controllers\Admin\GifthistoryController::class, 'confirm']);
 });
 //Gift Member
