@@ -231,9 +231,11 @@ class TheoryControler extends Controller
         }
     }
 
-    public function showCategory(string $id)
+    public function showCategory(string $id, Request $request)
     {
         try {
+            $perPage = $request->input('per_page', 10);
+
             $category = TheOryCategory::where('cat_id', $id)
                 ->where('display', 1)
                 ->whereHas('theories', function ($query) {
@@ -263,7 +265,7 @@ class TheoryControler extends Controller
                 }])
                 ->select('theory_id', 'title', 'short_description', 'friendly_url', 'picture', 'cat_id')
                 ->orderBy('theory_id', 'desc')
-                ->get();
+                ->paginate($perPage);
 
             if ($theories->isEmpty()) {
                 return response()->json([
@@ -272,7 +274,7 @@ class TheoryControler extends Controller
                 ], 404);
             }
 
-            $data = $theories->map(function ($theory) {
+            $data = $theories->through(function ($theory) {
                 $quiz = $theory->quizzes->first();
 
                 if (!$quiz) {
@@ -294,7 +296,7 @@ class TheoryControler extends Controller
                         'question_count' => $quiz->questions->count(),
                     ]
                 ];
-            })->filter()->values();
+            });
 
             return response()->json([
                 'status' => true,
@@ -303,7 +305,13 @@ class TheoryControler extends Controller
                         'id' => $category->cat_id,
                         'title' => $category->title
                     ],
-                    'theories' => $data
+                    'theories' => $data->items(),
+                    'pagination' => [
+                        'current_page' => $theories->currentPage(),
+                        'per_page' => $theories->perPage(),
+                        'total' => $theories->total(),
+                        'last_page' => $theories->lastPage()
+                    ]
                 ]
             ], 200);
         } catch (\Exception $e) {
