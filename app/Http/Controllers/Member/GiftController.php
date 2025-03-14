@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Member;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 use App\Models\Gift;
 use App\Models\Member;
 use App\Models\GiftHistory;
+use App\Mail\GiftRedeemMail;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -104,7 +106,7 @@ class GiftController extends Controller
 
             $updatedMember = null;
 
-            DB::transaction(function () use ($member, $gift, &$updatedMember) {
+            DB::transaction(function () use ($member, $gift, &$updatedMember, $request) {
                 $gift->decrement('quantity');
 
                 Member::where('id', $member->id)
@@ -113,29 +115,36 @@ class GiftController extends Controller
                         'used_points' => DB::raw('COALESCE(used_points, 0) + ' . $gift->reward_point)
                     ]);
 
-                    GiftHistory::create([
-                        'member_id' => $member->id,
-                        'gift_id' => $gift->id,
-                        'points_used' => $gift->reward_point,
-                        'remaining_points' => $member->points - $gift->reward_point,
-                        'redeemed_at' => now(),
-                        'cityAddress'=>$request->cityAddress??null,
-                        'districtAddress'=>$request->districtAddress??null,
-                        'wardAddress'=>$request->wardAddress??null,
-                        'streetAddress'=>$request->streetAddress??null,
-                        'numberPhone'=>$request->numberPhone??null,
-                    ]);
+                GiftHistory::create([
+                    'member_id' => $member->id,
+                    'gift_id' => $gift->id,
+                    'points_used' => $gift->reward_point,
+                    'remaining_points' => $member->points - $gift->reward_point,
+                    'redeemed_at' => now(),
+                    'cityAddress' => $request->cityAddress ?? null,
+                    'districtAddress' => $request->districtAddress ?? null,
+                    'wardAddress' => $request->wardAddress ?? null,
+                    'streetAddress' => $request->streetAddress ?? null,
+                    'numberPhone' => $request->numberPhone ?? null,
+                ]);
 
-                    $emailData = [
-                        'recipientName' => $member->username,
-                        'giftName' => $gift->title,
-                        'giftDescription' => $gift->description,
-                        'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
-                        'rewardPoints' => $gift->reward_point,
-                        'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.'
-                    ];
+                $emailData = [
+                    'recipientName' => $member->username,
+                    'giftName' => $gift->title,
+                    'giftDescription' => $gift->description,
+                    'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
+                    'rewardPoints' => $gift->reward_point,
+                    'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
+                    'address' => implode(', ', array_filter([
+                        $request->streetAddress,
+                        $request->wardAddress,
+                        $request->districtAddress,
+                        $request->cityAddress
+                    ])),
+                    'phoneNumber' => $request->numberPhone
+                ];
 
-                    Mail::to($member->email)->send(new GiftRedeemMail($emailData));
+                Mail::to($member->email)->send(new GiftRedeemMail($emailData));
             });
 
             $updatedMember = Member::find($member->id);

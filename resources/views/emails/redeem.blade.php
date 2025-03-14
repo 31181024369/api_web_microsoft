@@ -32,6 +32,12 @@
         <li><strong>Giá trị điểm thưởng:</strong> {{ $rewardPoints }} điểm</li>
     </ul>
 
+    <h3>Thông tin giao hàng:</h3>
+    <ul>
+        <li><strong>Địa chỉ nhận hàng:</strong> {{ $address }}</li>
+        <li><strong>Số điện thoại:</strong> {{ $phoneNumber }}</li>
+    </ul>
+
     <h3>Hướng dẫn nhận quà:</h3>
     <p>{{ $deliveryInfo }}</p>
 

@@ -29,6 +29,7 @@
         <li><strong>Tên quà tặng:</strong> {{ $giftName }}</li>
         <li><strong>Mô tả:</strong> {{ $giftDescription }}</li>
         <li><strong>Thời gian đổi quà:</strong> {{ $redeemTime }}</li>
+        <li><strong>Địa chỉ:</strong> {{ $redeemTime }}</li>
         <li><strong>Giá trị điểm thưởng:</strong> {{ $rewardPoints }} điểm</li>
     </ul>
 
