@@ -180,8 +180,10 @@ class GifthistoryController extends Controller
             ], 500);
         }
     }
-    public function detail(Request $request, $id){
-        try{
+
+    public function detail(Request $request, $id)
+    {
+        try {
             return $id;
         } catch (\Exception $e) {
             return response()->json([

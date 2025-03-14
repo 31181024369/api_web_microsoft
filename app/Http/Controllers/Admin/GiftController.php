@@ -34,6 +34,7 @@ class GiftController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'reward_point' => 'required|integer',
+                'quantity' => 'required|integer',
                 'picture' => 'nullable',
                 'display' => 'required|boolean',
             ]);
@@ -43,6 +44,7 @@ class GiftController extends Controller
             $gift->description = $validatedData['description'] ?? null;
             $gift->reward_point = $validatedData['reward_point'];
             $gift->display = $validatedData['display'];
+            $gift->quantity = $validatedData['quantity'];
 
             $filePath = '';
             $disPath = public_path();
@@ -117,12 +119,14 @@ class GiftController extends Controller
                 'reward_point' => 'required|integer',
                 'picture' => 'nullable',
                 'display' => 'required|boolean',
+                'quantity' => 'required|integer',
             ]);
 
             $gift->title = $validatedData['title'];
             $gift->description = $validatedData['description'] ?? null;
             $gift->reward_point = $validatedData['reward_point'];
             $gift->display = $validatedData['display'];
+            $gift->quantity = $validatedData['quantity'];
 
             $filePath = '';
             $disPath = public_path();

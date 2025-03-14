@@ -231,6 +231,90 @@ class TheoryControler extends Controller
         }
     }
 
+    public function showCategory(string $id)
+    {
+        try {
+            $category = TheOryCategory::where('cat_id', $id)
+                ->where('display', 1)
+                ->whereHas('theories', function ($query) {
+                    $query->where('display', 1)
+                        ->whereHas('quizzes', function ($q) {
+                            $q->where('display', 1);
+                        });
+                })
+                ->first();
+
+            if (!$category) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Danh mục không tồn tại hoặc không có bài học'
+                ], 404);
+            }
+
+            // Get theories with displayed quizzes
+            $theories = TheOry::where('cat_id', $id)
+                ->where('display', 1)
+                ->whereHas('quizzes', function ($q) {
+                    $q->where('display', 1);
+                })
+                ->with(['quizzes' => function ($query) {
+                    $query->where('display', 1)
+                        ->select('id', 'theory_id', 'name', 'friendly_url', 'time', 'pointAward')
+                        ->with('questions:id,quiz_id');
+                }])
+                ->select('theory_id', 'title', 'short_description', 'friendly_url', 'picture', 'cat_id')
+                ->orderBy('theory_id', 'desc')
+                ->get();
+
+            if ($theories->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không có bài học nào trong danh mục này'
+                ], 404);
+            }
+
+            $data = $theories->map(function ($theory) {
+                $quiz = $theory->quizzes->first();
+
+                if (!$quiz) {
+                    return null;
+                }
+
+                return [
+                    'id' => $theory->theory_id,
+                    'title' => $theory->title,
+                    'short_description' => $theory->short_description,
+                    'friendly_url' => $theory->friendly_url,
+                    'picture' => $theory->picture,
+                    'quiz' => [
+                        'id' => $quiz->id,
+                        'name' => $quiz->name,
+                        'friendly_url' => $quiz->friendly_url,
+                        'time' => $quiz->time,
+                        'pointAward' => $quiz->pointAward,
+                        'question_count' => $quiz->questions->count(),
+                    ]
+                ];
+            })->filter()->values();
+
+            return response()->json([
+                'status' => true,
+                'data' => [
+                    'category' => [
+                        'id' => $category->cat_id,
+                        'title' => $category->title
+                    ],
+                    'theories' => $data
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function take_history_theory()
     {
         $member = Auth::guard('member')->user();

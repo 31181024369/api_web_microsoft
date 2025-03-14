@@ -25,7 +25,7 @@ class GiftController extends Controller
             $perPage = $request->input('per_page', 20);
 
             $gifts = $query->where('display', 1)
-                ->orderBy('reward_point', 'desc')
+                ->orderBy('reward_point', 'asc')
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
