@@ -142,8 +142,8 @@ class GiftController extends Controller
                         'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
                         'rewardPoints' => $gift->reward_point,
                         'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
-                        'address' => !empty($fullAddress) ? implode(', ', $fullAddress) : 'Chưa cung cấp',
-                        'phoneNumber' => $request->numberPhone ?? 'Chưa cung cấp'
+                        //'address' => !empty($fullAddress) ? implode(', ', $fullAddress) : 'Chưa cung cấp',
+                        'phoneNumber' => $request->numberPhone
                     ];
 
                     try {
@@ -152,11 +152,6 @@ class GiftController extends Controller
                         Log::error('Email error: ' . $e->getMessage());
                     }
 
-                    try {
-                        Mail::to($member->email)->send(new GiftRedeemMail($emailData));
-                    } catch (\Exception $e) {
-                        Log::error('Email error: ' . $e->getMessage());
-                    }
                 } catch (\Exception $e) {
                     Log::error('Transaction failed: ' . $e->getMessage());
                     throw $e;
