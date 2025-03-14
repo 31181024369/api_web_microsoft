@@ -128,6 +128,12 @@ class GiftController extends Controller
                         'streetAddress' => $request->streetAddress ?? null,
                         'numberPhone' => $request->numberPhone ?? null,
                     ]);
+                    $fullAddress = array_filter([
+                        $request->streetAddress,
+                        $request->wardAddress,
+                        $request->districtAddress,
+                        $request->cityAddress
+                    ]);
 
                     $emailData = [
                         'recipientName' => $member->username,
@@ -136,16 +142,15 @@ class GiftController extends Controller
                         'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
                         'rewardPoints' => $gift->reward_point,
                         'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
-                        'address' => implode(', ', array_filter([
-                            $request->streetAddress ?? '',
-                            $request->wardAddress ?? '',
-                            $request->districtAddress ?? '',
-                            $request->cityAddress ?? ''
-                        ], function ($value) {
-                            return !empty($value);
-                        })),
+                        'address' => !empty($fullAddress) ? implode(', ', $fullAddress) : 'Chưa cung cấp',
                         'phoneNumber' => $request->numberPhone ?? 'Chưa cung cấp'
                     ];
+
+                    try {
+                        Mail::to($member->email)->send(new GiftRedeemMail($emailData));
+                    } catch (\Exception $e) {
+                        Log::error('Email error: ' . $e->getMessage());
+                    }
 
                     try {
                         Mail::to($member->email)->send(new GiftRedeemMail($emailData));
