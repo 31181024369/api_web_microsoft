@@ -27,7 +27,7 @@ class TheoryControler extends Controller
                                 ->with('questions');
                         }])
                         ->orderBy('theory_id', 'desc')
-                        ->limit(10);
+                        ->take(10);
                 }])
                 ->get();
 
