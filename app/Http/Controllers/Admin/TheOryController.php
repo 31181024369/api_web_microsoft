@@ -230,6 +230,14 @@ class TheOryController extends Controller
     {
         try {
             $theory = TheOry::findOrFail($id);
+
+            if ($theory->picture) {
+                $imagePath = public_path('uploads/' . $theory->picture);
+                if (File::exists($imagePath)) {
+                    File::delete($imagePath);
+                }
+            }
+
             $theory->delete();
 
             return response()->json([
@@ -259,9 +267,18 @@ class TheOryController extends Controller
 
             $idsArray = explode(",", $ids);
 
-            foreach ($idsArray as $id) {
-                TheOry::whereIn('theory_id', $idsArray)->delete();
+            $theories = TheOry::whereIn('theory_id', $idsArray)->get();
+
+            foreach ($theories as $theory) {
+                if ($theory->picture) {
+                    $imagePath = public_path('uploads/' . $theory->picture);
+                    if (File::exists($imagePath)) {
+                        File::delete($imagePath);
+                    }
+                }
             }
+
+            TheOry::whereIn('theory_id', $idsArray)->delete();
 
             return response()->json([
                 'status' => true,
@@ -273,31 +290,5 @@ class TheOryController extends Controller
                 'message' => 'Lỗi khi xóa dữ liệu: ' . $e->getMessage()
             ], 500);
         }
-    }
-
-    private function saveBase64Image($base64Image, $folderPath)
-    {
-        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $matches)) {
-            $imageType = $matches[1];
-            $base64Image = substr($base64Image, strpos($base64Image, ',') + 1);
-            $base64Image = base64_decode($base64Image);
-
-            if ($base64Image === false) {
-                throw new \Exception('Invalid base64 image data');
-            }
-
-            $fileName = uniqid('image_') . '.' . $imageType;
-            $filePath = $folderPath . '/' . $fileName;
-
-            if (!file_exists(public_path($folderPath))) {
-                mkdir(public_path($folderPath), 0777, true);
-            }
-
-            file_put_contents(public_path($filePath), $base64Image);
-
-            return $filePath;
-        }
-
-        throw new \Exception('Invalid image format');
     }
 }
