@@ -94,23 +94,23 @@ class TheOryController extends Controller
 
             $disPath = public_path();
             $filePath = '';
-            if ( $request->picture != null ) {
+            if ($request->picture != null) {
                 $DIR = 'uploads/theory';
 
-                $httpPost = file_get_contents( 'php://input' );
-                $file_chunks = explode( ';base64,', $request->picture[ 0 ] );
-                $fileType = explode( 'image/', $file_chunks[ 0 ] );
-                $image_type = $fileType[ 0 ];
+                $httpPost = file_get_contents('php://input');
+                $file_chunks = explode(';base64,', $request->picture[0]);
+                $fileType = explode('image/', $file_chunks[0]);
+                $image_type = $fileType[0];
 
-                $base64Img = base64_decode( $file_chunks[ 1 ] );
-                $data = iconv( 'latin5', 'utf-8', $base64Img );
+                $base64Img = base64_decode($file_chunks[1]);
+                $data = iconv('latin5', 'utf-8', $base64Img);
                 $name = uniqid();
 
-                $file = public_path( $DIR ) . '/' . $name . '.png';
-                $filePath = 'theory/'.$name . '.png';
-                file_put_contents( $file,  $base64Img );
+                $file = public_path($DIR) . '/' . $name . '.png';
+                $filePath = 'theory/' . $name . '.png';
+                file_put_contents($file,  $base64Img);
             }
-            $theOry-> picture = $filePath;
+            $theOry->picture = $filePath;
 
             $theOry->display = $validatedData['display'];
             $theOry->cat_id = $validatedData['cat_id'];
@@ -180,28 +180,31 @@ class TheOryController extends Controller
             $theOry->meta_keywords = $validatedData['meta_keywords'] ?? null;
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
-            $disPath = public_path();
-            $filePath = '';
-            if ( $request->picture != null && $theOry->picture != $request->picture ) {
-                $filePath = '';
+            if ($request->picture != null && $request->picture !== $theOry->picture) {
+                if ($theOry->picture) {
+                    $oldImagePath = public_path('uploads/' . $theOry->picture);
+                    if (File::exists($oldImagePath)) {
+                        File::delete($oldImagePath);
+                    }
+                }
+
                 $DIR = 'uploads/theory';
-
-                $httpPost = file_get_contents( 'php://input' );
-                $file_chunks = explode( ';base64,', $request->picture[ 0 ] );
-                $fileType = explode( 'image/', $file_chunks[ 0 ] );
-                $image_type = $fileType[ 0 ];
-
-                $base64Img = base64_decode( $file_chunks[ 1 ] );
-                $data = iconv( 'latin5', 'utf-8', $base64Img );
+                $file_chunks = explode(';base64,', $request->picture[0]);
+                $fileType = explode('image/', $file_chunks[0]);
+                $base64Img = base64_decode($file_chunks[1]);
                 $name = uniqid();
 
-                $file = public_path( $DIR ) . '/' . $name . '.png';
-                $filePath = 'theory/'.$name . '.png';
-                file_put_contents( $file,  $base64Img );
-            } else {
-                $filePath = $theOry->picture;
+                if (!File::exists(public_path($DIR))) {
+                    File::makeDirectory(public_path($DIR), 0777, true);
+                }
+
+                $file = public_path($DIR) . '/' . $name . '.png';
+                $filePath = 'theory/' . $name . '.png';
+                file_put_contents($file, $base64Img);
+
+                $theOry->picture = $filePath;
             }
-            $theOry-> picture = $filePath;
+
             $theOry->display = $validatedData['display'];
             $theOry->cat_id = $validatedData['cat_id'];
             $theOry->save();
