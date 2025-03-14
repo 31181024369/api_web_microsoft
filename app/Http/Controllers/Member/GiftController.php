@@ -142,7 +142,7 @@ class GiftController extends Controller
                         'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
                         'rewardPoints' => $gift->reward_point,
                         'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
-                        //'address' => !empty($fullAddress) ? implode(', ', $fullAddress) : 'Chưa cung cấp',
+                        'address' => !empty($fullAddress) ? implode(', ', $fullAddress) : 'Chưa cung cấp',
                         'phoneNumber' => $request->numberPhone
                     ];
 
