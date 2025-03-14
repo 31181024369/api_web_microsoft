@@ -92,26 +92,26 @@ class TheOryController extends Controller
             $theOry->meta_keywords = $validatedData['meta_keywords'] ?? null;
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
-            $filePath = '';
             $disPath = public_path();
+            $filePath = '';
+            if ( $request->picture != null ) {
+                $DIR = 'uploads/theory';
 
-            if ($request->picture != null) {
+                $httpPost = file_get_contents( 'php://input' );
+                $file_chunks = explode( ';base64,', $request->picture[ 0 ] );
+                $fileType = explode( 'image/', $file_chunks[ 0 ] );
+                $image_type = $fileType[ 0 ];
 
-                $DIR = $disPath . '\uploads\theory';
-                $httpPost = file_get_contents('php://input');
-
-                $file_chunks = explode(';base64,', $request->picture[0]);
-                $fileType = explode('image/', $file_chunks[0]);
-                $image_type = $fileType[0];
-                $base64Img = base64_decode($file_chunks[1]);
-                $data = iconv('latin5', 'utf-8', $base64Img);
+                $base64Img = base64_decode( $file_chunks[ 1 ] );
+                $data = iconv( 'latin5', 'utf-8', $base64Img );
                 $name = uniqid();
-                $file = $DIR . '\\' . $name . '.png';
-                $filePath = 'theory/' . $name . '.png';
-                file_put_contents($file,  $base64Img);
-            }
 
-            $theOry->picture = $filePath;
+                $file = public_path( $DIR ) . '/' . $name . '.png';
+                $filePath = 'theory/'.$name . '.png';
+                file_put_contents( $file,  $base64Img );
+            }
+            $theOry-> picture = $filePath;
+
             $theOry->display = $validatedData['display'];
             $theOry->cat_id = $validatedData['cat_id'];
             $theOry->save();
@@ -180,25 +180,28 @@ class TheOryController extends Controller
             $theOry->meta_keywords = $validatedData['meta_keywords'] ?? null;
             $theOry->meta_description = $validatedData['meta_description'] ?? null;
 
-            $filePath = '';
             $disPath = public_path();
-            if ($request->picture != null && $theOry->picture !=  $request->picture) {
-                $DIR = $disPath . '\uploads\theory';
-                $httpPost = file_get_contents('php://input');
-                $file_chunks = explode(';base64,', $request->picture[0]);
-                $fileType = explode('image/', $file_chunks[0]);
-                $image_type = $fileType[0];
-                $base64Img = base64_decode($file_chunks[1]);
-                $data = iconv('latin5', 'utf-8', $base64Img);
-                $name = uniqid();
-                $file = $DIR . '\\' . $name . '.png';
-                $filePath = 'theory/' . $name . '.png';
-                file_put_contents($file,  $base64Img);
-            } else {
-                $filePath =  $theOry->picture;
-            }
-            $theOry->picture = $filePath;
+            $filePath = '';
+            if ( $request->picture != null && $theOry->picture != $request->picture ) {
+                $filePath = '';
+                $DIR = 'uploads/theory';
 
+                $httpPost = file_get_contents( 'php://input' );
+                $file_chunks = explode( ';base64,', $request->picture[ 0 ] );
+                $fileType = explode( 'image/', $file_chunks[ 0 ] );
+                $image_type = $fileType[ 0 ];
+
+                $base64Img = base64_decode( $file_chunks[ 1 ] );
+                $data = iconv( 'latin5', 'utf-8', $base64Img );
+                $name = uniqid();
+
+                $file = public_path( $DIR ) . '/' . $name . '.png';
+                $filePath = 'theory/'.$name . '.png';
+                file_put_contents( $file,  $base64Img );
+            } else {
+                $filePath = $theOry->picture;
+            }
+            $theOry-> picture = $filePath;
             $theOry->display = $validatedData['display'];
             $theOry->cat_id = $validatedData['cat_id'];
             $theOry->save();
