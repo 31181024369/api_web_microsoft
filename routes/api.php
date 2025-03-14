@@ -58,7 +58,7 @@ Route::group(['middleware' => 'admin'], function () {
 
     // Theory Admin
     Route::resource('theory', App\Http\Controllers\Admin\TheOryController::class);
-    Route::delete('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
+    Route::post('theorys/delete', [App\Http\Controllers\Admin\TheoryController::class, 'delete']);
 
     //Gift Admin
     Route::resource('gift', App\Http\Controllers\Admin\GiftController::class);
