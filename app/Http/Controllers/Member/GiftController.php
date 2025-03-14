@@ -137,18 +137,18 @@ class GiftController extends Controller
                         'rewardPoints' => $gift->reward_point,
                         'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
                         'address' => implode(', ', array_filter([
-                            $request->streetAddress,
-                            $request->wardAddress,
-                            $request->districtAddress,
-                            $request->cityAddress
-                        ])),
-                        'phoneNumber' => $request->numberPhone
+                            $request->streetAddress ?? '',
+                            $request->wardAddress ?? '',
+                            $request->districtAddress ?? '',
+                            $request->cityAddress ?? ''
+                        ], function ($value) {
+                            return !empty($value);
+                        })),
+                        'phoneNumber' => $request->numberPhone ?? 'Chưa cung cấp'
                     ];
 
                     try {
                         Mail::to($member->email)->send(new GiftRedeemMail($emailData));
-                    } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
-                        Log::error('Email sending failed: ' . $e->getMessage());
                     } catch (\Exception $e) {
                         Log::error('Email error: ' . $e->getMessage());
                     }
