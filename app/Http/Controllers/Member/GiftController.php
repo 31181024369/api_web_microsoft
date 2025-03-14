@@ -151,7 +151,6 @@ class GiftController extends Controller
                     } catch (\Exception $e) {
                         Log::error('Email error: ' . $e->getMessage());
                     }
-
                 } catch (\Exception $e) {
                     Log::error('Transaction failed: ' . $e->getMessage());
                     throw $e;

@@ -16,6 +16,8 @@ class GiftRedeemMail extends Mailable
     public $redeemTime;
     public $rewardPoints;
     public $deliveryInfo;
+    public $address;
+    public $phoneNumber;
 
     public function __construct($data)
     {
@@ -25,6 +27,8 @@ class GiftRedeemMail extends Mailable
         $this->redeemTime = $data['redeemTime'];
         $this->rewardPoints = $data['rewardPoints'];
         $this->deliveryInfo = $data['deliveryInfo'];
+        $this->address = $data['address'];
+        $this->phoneNumber = $data['phoneNumber'];
     }
 
     public function build()
