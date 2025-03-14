@@ -16,81 +16,84 @@ class TheoryControler extends Controller
     public function index()
     {
         try {
+            $member_id = Auth::guard('member')->user()?->id;
+
             $theOryCategory = TheOryCategory::where('display', 1)
                 ->with(['theories' => function ($q) {
                     $q->where('display', 1)
+                        // Lấy các theory có quiz hợp lệ
                         ->whereHas('quizzes', function ($query) {
-                            $query->where('display', 1);
+                            $query->where('display', 1)
+                                ->whereColumn('theory_id', 'theories.theory_id')
+                                ->whereColumn('cat_id', 'theories.cat_id');
                         })
+                        // Load quiz và câu hỏi
                         ->with(['quizzes' => function ($q) {
                             $q->where('display', 1)
-                                ->with('questions');
+                                ->select('id', 'theory_id', 'cat_id', 'name', 'friendly_url', 'time', 'pointAward', 'display')
+                                ->with('questions:id,quiz_id');
                         }])
+                        ->select('theory_id', 'cat_id', 'title', 'friendly_url', 'picture', 'short_description', 'created_at')
                         ->orderBy('theory_id', 'desc')
-                        ->take(10);
+                        ->limit(10); // Giới hạn 10 theories mỗi category
                 }])
                 ->get();
 
             $response = [];
-            $member_id = Auth::guard('member')->user()?->id;
 
-            foreach ($theOryCategory as $item) {
-                $theories = $item->theories->map(function ($theory) use ($item, $member_id) {
-                    $quiz = $theory->quizzes->first(function ($quiz) use ($item, $theory) {
-                        return $quiz->cat_id == $item->cat_id &&
-                            $quiz->theory_id == $theory->theory_id &&
-                            $quiz->display == 1;
-                    });
+            foreach ($theOryCategory as $category) {
+                $theories = $category->theories->map(function ($theory) use ($member_id) {
+                    $quiz = $theory->quizzes->first();
 
-                    if (!$quiz) {
-                        return null;
+                    if (!$quiz) return null;
+
+                    $hasAttempted = false;
+                    $is_finish = false;
+
+                    if ($member_id) {
+                        $quizMember = QuizMember::where('member_id', $member_id)
+                            ->where('quiz_id', $quiz->id)
+                            ->first();
+
+                        if ($quizMember) {
+                            $hasAttempted = true;
+                            $is_finish = $quizMember->is_finish;
+                        }
                     }
 
-                    $start = \Carbon\Carbon::parse($theory->created_at)->format('d/m/Y');
-
-
-                    $theoryData = [
+                    return [
                         'id' => $theory->theory_id,
                         'title' => $theory->title,
                         'friendly_url' => $theory->friendly_url,
                         'picture' => $theory->picture,
                         'short_description' => $theory->short_description,
-                        'created_at' => $start,
+                        'created_at' => \Carbon\Carbon::parse($theory->created_at)->format('d/m/Y'),
+                        'quiz' => [
+                            'id' => $quiz->id,
+                            'name' => $quiz->name,
+                            'friendly_url' => $quiz->friendly_url,
+                            'time' => $quiz->time,
+                            'pointAward' => $quiz->pointAward,
+                            'question_count' => $quiz->questions->count(),
+                            'has_attempted' => $hasAttempted,
+                            'is_finish' => $is_finish
+                        ]
                     ];
-
-                    $hasAttempted = QuizMember::where('member_id', $member_id)
-                        ->where('quiz_id', $quiz->id)
-                        ->exists();
-
-                    $is_finish = QuizMember::where('member_id', $member_id)
-                        ->where('quiz_id', $quiz->id)
-                        ->where('is_finish', 1)
-                        ->exists();
-
-                    $theoryData['quiz'] = [
-                        'id' => $quiz->id,
-                        'name' => $quiz->name,
-                        'friendly_url' => $quiz->friendly_url,
-                        'time' => $quiz->time,
-                        'pointAward' => $quiz->pointAward,
-                        'question_count' => $quiz->questions->count(),
-                        'has_attempted' => $hasAttempted,
-                        'is_finish' => $is_finish
-                    ];
-
-                    return $theoryData;
                 })->filter()->values();
 
                 if ($theories->isNotEmpty()) {
                     $response[] = [
-                        'id' => $item->cat_id,
-                        'title' => $item->title,
-                        'theories' => $theories,
+                        'id' => $category->cat_id,
+                        'title' => $category->title,
+                        'theories' => $theories
                     ];
                 }
             }
 
-            return response()->json(['status' => true, 'list' => $response], 200);
+            return response()->json([
+                'status' => true,
+                'list' => $response
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
