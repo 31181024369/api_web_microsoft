@@ -18,7 +18,7 @@
 
 <body>
     <div class="logo-container">
-        <img src="{{ asset('uploads/logo.jpg') }}" alt="Logo" class="logo">
+        <img src="http://edu.vitinhnguyenkim.com.vn/uploads/logoMicrosoft.jpg" alt="Logo" class="logo">
     </div>
     <h2>Xin chào {{ $recipientName }},</h2>
 
