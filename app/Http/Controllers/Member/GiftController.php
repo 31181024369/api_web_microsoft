@@ -9,9 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Gift;
 use App\Models\Member;
 use App\Models\GiftHistory;
+use App\Mail\GiftRedeemMail;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class GiftController extends Controller
 {
@@ -120,6 +122,17 @@ class GiftController extends Controller
                     'remaining_points' => $member->points - $gift->reward_point,
                     'redeemed_at' => now()
                 ]);
+
+                $emailData = [
+                    'recipientName' => $member->username,
+                    'giftName' => $gift->title,
+                    'giftDescription' => $gift->description,
+                    'redeemTime' => now()->format('d/m/Y H:i:s'),
+                    'rewardPoints' => $gift->reward_point,
+                    'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.'
+                ];
+
+                Mail::to($member->email)->send(new GiftRedeemMail($emailData));
             });
 
             $updatedMember = Member::find($member->id);
