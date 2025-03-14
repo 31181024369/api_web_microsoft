@@ -106,46 +106,56 @@ class GiftController extends Controller
 
             $updatedMember = null;
 
-            DB::transaction(function () use ($member, $gift, &$updatedMember,$request) {
-                $gift->decrement('quantity');
+            DB::transaction(function () use ($member, $gift, &$updatedMember, $request) {
+                try {
+                    $gift->decrement('quantity');
 
-                Member::where('id', $member->id)
-                    ->update([
-                        'points' => DB::raw('points - ' . $gift->reward_point),
-                        'used_points' => DB::raw('COALESCE(used_points, 0) + ' . $gift->reward_point)
+                    Member::where('id', $member->id)
+                        ->update([
+                            'points' => DB::raw('points - ' . $gift->reward_point),
+                            'used_points' => DB::raw('COALESCE(used_points, 0) + ' . $gift->reward_point)
+                        ]);
+
+                    GiftHistory::create([
+                        'member_id' => $member->id,
+                        'gift_id' => $gift->id,
+                        'points_used' => $gift->reward_point,
+                        'remaining_points' => $member->points - $gift->reward_point,
+                        'redeemed_at' => now(),
+                        'cityAddress' => $request->cityAddress ?? null,
+                        'districtAddress' => $request->districtAddress ?? null,
+                        'wardAddress' => $request->wardAddress ?? null,
+                        'streetAddress' => $request->streetAddress ?? null,
+                        'numberPhone' => $request->numberPhone ?? null,
                     ]);
 
-                GiftHistory::create([
-                    'member_id' => $member->id,
-                    'gift_id' => $gift->id,
-                    'points_used' => $gift->reward_point,
-                    'remaining_points' => $member->points - $gift->reward_point,
-                    'redeemed_at' => now(),
-                    'cityAddress' => $request->cityAddress ?? null,
-                    'districtAddress' => $request->districtAddress ?? null,
-                    'wardAddress' => $request->wardAddress ?? null,
-                    'streetAddress' => $request->streetAddress ?? null,
-                    'numberPhone' => $request->numberPhone ?? null,
-                ]);
+                    $emailData = [
+                        'recipientName' => $member->username,
+                        'giftName' => $gift->title,
+                        'giftDescription' => $gift->description,
+                        'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
+                        'rewardPoints' => $gift->reward_point,
+                        'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
+                        'address' => implode(', ', array_filter([
+                            $request->streetAddress,
+                            $request->wardAddress,
+                            $request->districtAddress,
+                            $request->cityAddress
+                        ])),
+                        'phoneNumber' => $request->numberPhone
+                    ];
 
-                $emailData = [
-                    'recipientName' => $member->username,
-                    'giftName' => $gift->title,
-                    'giftDescription' => $gift->description,
-                    'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
-                    'rewardPoints' => $gift->reward_point,
-                    'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
-                    'address' => implode(', ', array_filter([
-                        $request->streetAddress,
-                        $request->wardAddress,
-                        $request->districtAddress,
-                        $request->cityAddress
-                    ])),
-                    'phoneNumber' => $request->numberPhone
-                ];
-
-
-                // Mail::to($member->email)->send(new GiftRedeemMail($emailData));
+                    try {
+                        Mail::to($member->email)->send(new GiftRedeemMail($emailData));
+                    } catch (\Symfony\Component\Mailer\Exception\TransportExceptionInterface $e) {
+                        Log::error('Email sending failed: ' . $e->getMessage());
+                    } catch (\Exception $e) {
+                        Log::error('Email error: ' . $e->getMessage());
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Transaction failed: ' . $e->getMessage());
+                    throw $e;
+                }
             });
 
             $updatedMember = Member::find($member->id);
