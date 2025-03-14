@@ -25,7 +25,9 @@ class TheoryControler extends Controller
                         ->with(['quizzes' => function ($q) {
                             $q->where('display', 1)
                                 ->with('questions');
-                        }]);
+                        }])
+                        ->orderBy('theory_id', 'desc')
+                        ->limit(10);
                 }])
                 ->get();
 
