@@ -19,6 +19,12 @@ class TheoryControler extends Controller
             $member_id = Auth::guard('member')->user()?->id;
 
             $theOryCategory = TheOryCategory::where('display', 1)
+                ->whereHas('theories', function ($q) {
+                    $q->where('display', 1)
+                        ->whereHas('quizzes', function ($query) {
+                            $query->where('display', 1);
+                        });
+                })
                 ->with(['theories' => function ($q) {
                     $q->where('display', 1)
                         ->whereHas('quizzes', function ($query) {
@@ -26,13 +32,29 @@ class TheoryControler extends Controller
                         })
                         ->with(['quizzes' => function ($q) {
                             $q->where('display', 1)
-                                ->select('id', 'theory_id', 'cat_id', 'name', 'friendly_url', 'time', 'pointAward', 'display')
-                                ->with('questions:id,quiz_id')
-                                ->limit(1);
+                                ->select([
+                                    'id',
+                                    'theory_id',
+                                    'cat_id',
+                                    'name',
+                                    'friendly_url',
+                                    'time',
+                                    'pointAward',
+                                    'display'
+                                ])
+                                ->with('questions:id,quiz_id');
                         }])
-                        ->select('theory_id', 'cat_id', 'title', 'friendly_url', 'picture', 'short_description', 'created_at')
+                        ->select([
+                            'theory_id',
+                            'cat_id',
+                            'title',
+                            'friendly_url',
+                            'picture',
+                            'short_description',
+                            'created_at'
+                        ])
                         ->orderBy('theory_id', 'desc')
-                        ->take(10);
+                        ->limit(10);
                 }])
                 ->get();
 
@@ -40,9 +62,6 @@ class TheoryControler extends Controller
 
             foreach ($theOryCategory as $category) {
                 $theories = $category->theories
-                    ->filter(function ($theory) {
-                        return $theory->quizzes->isNotEmpty();
-                    })
                     ->map(function ($theory) use ($member_id) {
                         $quiz = $theory->quizzes->first();
 
@@ -52,9 +71,10 @@ class TheoryControler extends Controller
                         $is_finish = false;
 
                         if ($member_id) {
-                            $quizMember = QuizMember::where('member_id', $member_id)
-                                ->where('quiz_id', $quiz->id)
-                                ->first();
+                            $quizMember = QuizMember::where([
+                                'member_id' => $member_id,
+                                'quiz_id' => $quiz->id
+                            ])->first();
 
                             if ($quizMember) {
                                 $hasAttempted = true;
@@ -81,7 +101,7 @@ class TheoryControler extends Controller
                             ]
                         ];
                     })
-                    ->take(10)
+                    ->filter()
                     ->values();
 
                 if ($theories->isNotEmpty()) {
