@@ -251,7 +251,6 @@ class TheoryControler extends Controller
                 ], 404);
             }
 
-            // Get theories with displayed quizzes
             $theories = TheOry::where('cat_id', $id)
                 ->where('display', 1)
                 ->whereHas('quizzes', function ($q) {
