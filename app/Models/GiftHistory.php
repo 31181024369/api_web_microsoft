@@ -16,7 +16,12 @@ class GiftHistory extends Model
         'remaining_points',
         'redeemed_at',
         'is_confirmed',
-        'confirmed_at'
+        'confirmed_at',
+        'cityAddress',
+        'districtAddress',
+        'wardAddress',
+        'streetAddress',
+        'numberPhone'
     ];
 
     protected $casts = [
