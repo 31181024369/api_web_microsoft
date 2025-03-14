@@ -3,9 +3,23 @@
 
 <head>
     <title>Thông báo nhận quà</title>
+    <style>
+        .logo-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .logo {
+            max-width: 200px;
+            height: auto;
+        }
+    </style>
 </head>
 
 <body>
+    <div class="logo-container">
+        <img src="{{ asset('uploads/logo.jpg') }}" alt="Logo" class="logo">
+    </div>
     <h2>Xin chào {{ $recipientName }},</h2>
 
     <p>Cảm ơn bạn đã tham gia phần thi E-learning tại website của chúng tôi!</p>
