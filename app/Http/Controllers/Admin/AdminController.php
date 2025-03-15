@@ -8,8 +8,21 @@ use App\Models\Admin;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 
+use App\Models\AdminLogs;
+use Carbon\Carbon;
+
 class AdminController extends Controller
 {
+    private function createLog($adminId, $action, $cat, $description)
+    {
+        AdminLogs::create([
+            'admin_id' => $adminId,
+            'time' => Carbon::now(),
+            'action' => $action,
+            'cat' => $cat,
+            'description' => $description
+        ]);
+    }
 
     public function index(Request $request)
     {
@@ -23,6 +36,13 @@ class AdminController extends Controller
                     ->orWhere('email', 'like', '%' . $request->data . '%');
             }
             $adminList = $list->paginate(10);
+
+            $this->createLog(
+                auth()->guard('admin')->id(),
+                'VIEW',
+                'ADMIN',
+                'Xem danh sách admin'
+            );
             return response()->json([
                 'status' => true,
                 'adminList' => $adminList,
@@ -99,6 +119,14 @@ class AdminController extends Controller
             $userAdmin->phone = $request['phone'];
             $userAdmin->status = $request['status'];
             $userAdmin->save();
+
+            $this->createLog(
+                auth()->guard('admin')->id(),
+                'CREATE',
+                'ADMIN',
+                'Tạo admin mới: ' . $userAdmin->username
+            );
+
             return response()->json([
                 'status' => true,
                 'userAdmin' => $userAdmin,
@@ -173,6 +201,14 @@ class AdminController extends Controller
             }
             $userAdmin->avatar = $filePath;
             $userAdmin->save();
+
+            $this->createLog(
+                auth()->guard('admin')->id(),
+                'UPDATE',
+                'ADMIN',
+                'Cập nhật thông tin admin: ' . $userAdmin->username
+            );
+
             return response()->json([
                 'status' => true,
                 'displayName' => $userAdmin,
@@ -190,10 +226,27 @@ class AdminController extends Controller
     public function destroy(string $id)
     {
         try {
-            Admin::where('id', $id)->delete();
-            return response()->json([
-                'status' => true
-            ]);
+            // Admin::where('id', $id)->delete();
+            // return response()->json([
+            //     'status' => true
+            // ]);
+            $admin = Admin::find($id);
+            if ($admin) {
+                $adminUsername = $admin->username;
+
+                $admin->delete();
+
+                $this->createLog(
+                    auth()->guard('admin')->id(),
+                    'DELETE',
+                    'ADMIN',
+                    'Xóa admin: ' . $adminUsername
+                );
+
+                return response()->json([
+                    'status' => true
+                ]);
+            }
         } catch (\Exception $error) {
 
             return response()->json([
