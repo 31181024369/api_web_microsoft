@@ -29,6 +29,8 @@ Route::group(['middleware' => 'admin', 'prefix' => 'admin'], function () {
     Route::post('delete-all-advertise', [App\Http\Controllers\Admin\AdvertiseController::class, 'deleteAll']);
     Route::post('delete-all-ad-pos', [App\Http\Controllers\Admin\AdposController::class, 'deleteAll']);
     Route::post('delete-all-product', [App\Http\Controllers\Admin\ProductController::class, 'deleteAll']);
+
+    Route::get('adminlogs', [App\Http\Controllers\Admin\AdminLogController::class, 'index']);
 });
 
 //Member
