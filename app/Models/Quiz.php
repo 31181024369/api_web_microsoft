@@ -23,7 +23,8 @@ class Quiz extends Model
         'metadesc',
         'pointAward',
         'cat_id',
-        'theory_id'
+        'theory_id',
+        'expirationDate',
     ];
     public function Question()
     {

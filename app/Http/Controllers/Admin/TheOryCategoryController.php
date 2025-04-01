@@ -56,7 +56,6 @@ class TheOryCategoryController extends Controller
 
     public function create()
     {
-        return 111;
     }
 
     public function store(Request $request)

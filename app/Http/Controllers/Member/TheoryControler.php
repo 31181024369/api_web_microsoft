@@ -132,7 +132,7 @@ class TheoryControler extends Controller
 
             $theory = TheOry::where('friendly_url', $friendlyUrl)
                 ->with(['category', 'quizzes' => function ($query) {
-                    $query->select('id', 'theory_id', 'friendly_url', 'name', 'display')
+                    $query->select('id', 'theory_id', 'friendly_url', 'name', 'display','expirationDate')
                         ->with('questions:id,quiz_id');
                 }])
                 ->first();
@@ -159,6 +159,7 @@ class TheoryControler extends Controller
                     'error' => 'Bài học này hiện không khả dụng'
                 ], 403);
             }
+            return $displayedQuiz;
 
             $response = [
                 'status' => true,
@@ -176,7 +177,8 @@ class TheoryControler extends Controller
                         'id' => $displayedQuiz->id,
                         'name' => $displayedQuiz->name,
                         'friendly_url' => $displayedQuiz->friendly_url,
-                        'question_count' => $displayedQuiz->questions->count()
+                        'question_count' => $displayedQuiz->questions->count(),
+                        'expirationDate' => $quiz->expirationDate && $quiz->expirationDate < now()->timestamp ? 'Hết hạn' : $quiz->expirationDate,
                     ]
                 ]
             ];
@@ -356,6 +358,51 @@ class TheoryControler extends Controller
                 'status' => false,
                 'message' => 'Vui lòng đăng nhập để xem lịch sử'
             ], 401);
+        }
+    }
+
+    public function take_category_theory()
+    {
+        try {
+            $categories = TheOryCategory::where('display', 1)
+                ->with(['theories' => function ($query) {
+                    $query->where('display', 1)
+                        ->select('theory_id', 'cat_id', 'title', 'friendly_url');
+                }])
+                ->select('cat_id', 'title', 'friendly_url')
+                ->get();
+
+            if ($categories->isEmpty()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No categories found or displayed'
+                ], 404);
+            }
+
+            $result = $categories->map(function ($category) {
+                return [
+                    'cat_id' => $category->cat_id,
+                    'title' => $category->title,
+                    'friendly_url' => $category->friendly_url,
+                    'theories' => $category->theories->map(function ($theory) {
+                        return [
+                            'theory_id' => $theory->theory_id,
+                            'title' => $theory->title,
+                            'friendly_url' => $theory->friendly_url
+                        ];
+                    })
+                ];
+            });
+
+            return response()->json([
+                'status' => true,
+                'data' => $result
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

@@ -61,10 +61,10 @@ class GiftController extends Controller
         }
     }
 
-    public function redeem(Request $request, string $id)
-    {
+    public function redeem(Request $request, string $id){
         try {
             $member = Auth::guard('member')->user();
+
             if (!$member) {
                 return response()->json([
                     'status' => false,
@@ -73,7 +73,6 @@ class GiftController extends Controller
             }
 
             $hasRedeemed = GiftHistory::where('member_id', $member->id)
-                ->where('gift_id', $id)
                 ->exists();
 
             if ($hasRedeemed) {
@@ -83,7 +82,14 @@ class GiftController extends Controller
                 ], 400);
             }
 
-            $gift = Gift::lockForUpdate()->findOrFail($id);
+            $gift = Gift::lockForUpdate()->find($id);
+
+            if (!$gift) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Không tìm thấy phần quà'
+                ], 404);
+            }
 
             if ($gift->quantity <= 0) {
                 return response()->json([
@@ -105,55 +111,58 @@ class GiftController extends Controller
             }
 
             $updatedMember = null;
-
             DB::transaction(function () use ($member, $gift, &$updatedMember, $request) {
+                $gift->decrement('quantity');
+
+                Member::where('id', $member->id)
+                    ->update([
+                        'points' => DB::raw('points - ' . $gift->reward_point),
+                        'used_points' => DB::raw('COALESCE(used_points, 0) + ' . $gift->reward_point)
+                    ]);
+
+                GiftHistory::create([
+                    'member_id' => $member->id,
+                    'gift_id' => $gift->id,
+                    'points_used' => $gift->reward_point,
+                    'remaining_points' => $member->points - $gift->reward_point,
+                    'redeemed_at' => now(),
+                    'cityAddress' => $request->cityAddress ?? null,
+                    'districtAddress' => $request->districtAddress ?? null,
+                    'wardAddress' => $request->wardAddress ?? null,
+                    'streetAddress' => $request->streetAddress ?? null,
+                    'numberPhone' => $request->numberPhone ?? null,
+                ]);
+
+                $fullAddress = array_filter([
+                    $request->streetAddress,
+                    $request->wardAddress,
+                    $request->districtAddress,
+                    $request->cityAddress
+                ]);
+
+                $emailData = [
+                    'recipientName' => $member->username,
+                    'giftName' => $gift->title,
+                    'giftDescription' => $gift->description,
+                    'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
+                    'rewardPoints' => $gift->reward_point,
+                    'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
+                    'address' => !empty($fullAddress) ? implode(', ', $fullAddress) : 'Chưa cung cấp',
+                    'phoneNumber' => $request->numberPhone
+                ];
+
+                $recipients = [
+                    'nhquoc99@gmail.com',
+                    'toidxbp02@gmail.com',
+                    $member->email
+                ];
+
                 try {
-                    $gift->decrement('quantity');
-
-                    Member::where('id', $member->id)
-                        ->update([
-                            'points' => DB::raw('points - ' . $gift->reward_point),
-                            'used_points' => DB::raw('COALESCE(used_points, 0) + ' . $gift->reward_point)
-                        ]);
-
-                    GiftHistory::create([
-                        'member_id' => $member->id,
-                        'gift_id' => $gift->id,
-                        'points_used' => $gift->reward_point,
-                        'remaining_points' => $member->points - $gift->reward_point,
-                        'redeemed_at' => now(),
-                        'cityAddress' => $request->cityAddress ?? null,
-                        'districtAddress' => $request->districtAddress ?? null,
-                        'wardAddress' => $request->wardAddress ?? null,
-                        'streetAddress' => $request->streetAddress ?? null,
-                        'numberPhone' => $request->numberPhone ?? null,
-                    ]);
-                    $fullAddress = array_filter([
-                        $request->streetAddress,
-                        $request->wardAddress,
-                        $request->districtAddress,
-                        $request->cityAddress
-                    ]);
-
-                    $emailData = [
-                        'recipientName' => $member->username,
-                        'giftName' => $gift->title,
-                        'giftDescription' => $gift->description,
-                        'redeemTime' => now()->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'),
-                        'rewardPoints' => $gift->reward_point,
-                        'deliveryInfo' => 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.',
-                        'address' => !empty($fullAddress) ? implode(', ', $fullAddress) : 'Chưa cung cấp',
-                        'phoneNumber' => $request->numberPhone
-                    ];
-
-                    try {
-                        Mail::to($member->email)->send(new GiftRedeemMail($emailData));
-                    } catch (\Exception $e) {
-                        Log::error('Email error: ' . $e->getMessage());
-                    }
+                    Mail::to($member->email)
+                        ->bcc($recipients)
+                        ->send(new GiftRedeemMail($emailData));
                 } catch (\Exception $e) {
-                    Log::error('Transaction failed: ' . $e->getMessage());
-                    throw $e;
+                    Log::error('Email error: ' . $e->getMessage());
                 }
             });
 
@@ -180,6 +189,42 @@ class GiftController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Có lỗi xảy ra khi đổi quà'
+            ], 500);
+        }
+    }
+
+    public function sendGiftRedeemEmail(Request $request)
+    {
+        $validatedData = $request->validate([
+            'recipientName' => 'required|string|max:255',
+            'recipientEmail' => 'required|email|max:255',
+            'giftName' => 'required|string|max:255',
+            'giftDescription' => 'nullable|string',
+            'rewardPoints' => 'required|integer',
+            'phoneNumber' => 'required|string|max:15',
+            'redeemTime' => 'required|string',
+        ]);
+
+        $validatedData['deliveryInfo'] = 'Quà tặng sẽ được gửi đến sau khi chúng tôi xác nhận.';
+        $validatedData['address'] = $request->address ?? 'Chưa cung cấp';
+
+        Log::info('Sending email with data: ', $validatedData);
+
+        try {
+            Mail::send('emails.redeem', $validatedData, function ($message) use ($validatedData) {
+                $message->to($validatedData['recipientEmail'], $validatedData['recipientName'])
+                    ->subject('Thông tin nhận quà từ E-learning');
+            });
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Email đã được gửi thành công.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Email sending failed: ' . $e->getMessage());
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra khi gửi email.'
             ], 500);
         }
     }

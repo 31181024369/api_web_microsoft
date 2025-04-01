@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\GiftHistory;
+use App\Exports\GiftHistoryExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class GifthistoryController extends Controller
 {
@@ -189,6 +191,80 @@ class GifthistoryController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $query = GiftHistory::query();
+            // $data = $request->input('data');
+            // $startTime = $request->input('start_time');
+            // $endTime = $request->input('end_time');
+
+            // if ($data || $startTime || $endTime) {
+            //     $query->where(function ($query) use ($data, $startTime, $endTime) {
+            //         if ($data) {
+            //             $query->whereHas('member', function ($q) use ($data) {
+            //                 $q->where(function ($innerQ) use ($data) {
+            //                     $innerQ->where('username', 'LIKE', "%{$data}%")
+            //                         ->orWhere('email', 'LIKE', "%{$data}%")
+            //                         ->orWhere('phone', 'LIKE', "%{$data}%");
+            //                 });
+            //             });
+            //         }
+
+            //         if ($startTime && $endTime) {
+            //             try {
+            //                 $start = \Carbon\Carbon::createFromTimestamp((int)$startTime)
+            //                     ->setTimezone('Asia/Ho_Chi_Minh')
+            //                     ->startOfDay();
+            //                 $end = \Carbon\Carbon::createFromTimestamp((int)$endTime)
+            //                     ->setTimezone('Asia/Ho_Chi_Minh')
+            //                     ->endOfDay();
+            //                 $query->whereBetween('created_at', [$start, $end]);
+            //             } catch (\Exception $e) {
+            //                 return response()->json([
+            //                     'status' => false,
+            //                     'message' => 'Invalid date format'
+            //                 ], 400);
+            //             }
+            //         } elseif ($startTime) {
+            //             try {
+            //                 $start = \Carbon\Carbon::createFromTimestamp((int)$startTime)
+            //                     ->setTimezone('Asia/Ho_Chi_Minh')
+            //                     ->startOfDay();
+            //                 $query->whereDate('created_at', '>=', $start);
+            //             } catch (\Exception $e) {
+            //                 return response()->json([
+            //                     'status' => false,
+            //                     'message' => 'Invalid start date format'
+            //                 ], 400);
+            //             }
+            //         } elseif ($endTime) {
+            //             try {
+            //                 $end = \Carbon\Carbon::createFromTimestamp((int)$endTime)
+            //                     ->setTimezone('Asia/Ho_Chi_Minh')
+            //                     ->endOfDay();
+            //                 $query->whereDate('created_at', '<=', $end);
+            //             } catch (\Exception $e) {
+            //                 return response()->json([
+            //                     'status' => false,
+            //                     'message' => 'Invalid end date format'
+            //                 ], 400);
+            //             }
+            //         }
+            //     });
+            // }
+
+            $query->with(['member', 'gift'])->orderBy('id', 'desc');
+
+            return Excel::download(new GiftHistoryExport($query), 'gift_history.xlsx');
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Có lỗi xảy ra khi xuất Excel: ' . $e->getMessage()
             ], 500);
         }
     }

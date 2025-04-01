@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('gifts', function (Blueprint $table) {
-            $table->integer('quantity')->default(0);
+        Schema::table('member_logs', function (Blueprint $table) {
+            //
         });
     }
 
@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('member_logs', function (Blueprint $table) {
+            //
+        });
     }
 };

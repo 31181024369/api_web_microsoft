@@ -29,8 +29,10 @@
         <li><strong>Tên quà tặng:</strong> {{ $giftName }}</li>
         <li><strong>Mô tả:</strong> {{ $giftDescription }}</li>
         <li><strong>Thời gian đổi quà:</strong> {{ $redeemTime }}</li>
-        <li><strong>Địa chỉ:</strong> {{ $redeemTime }}</li>
         <li><strong>Giá trị điểm thưởng:</strong> {{ $rewardPoints }} điểm</li>
+        <li><strong>Địa chỉ:</strong> {{ $address }}</li>
+        <li><strong>Số điện thoại:</strong> {{ $phoneNumber }}</li>
+        <li><strong>Quà sẽ được giao đến khách hàng từ ngày 1/4/ 2025 đến ngày 14/04/2025</strong></li>
     </ul>
 
     <h3>Hướng dẫn nhận quà:</h3>

@@ -3,14 +3,19 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+
 use App\Models\Quiz;
 use App\Models\Question;
 use App\Models\Answer;
 use App\Models\QuizMemberAnswer;
 use App\Models\QuizMember;
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+
 use App\Models\Member;
 
 class QuizController extends Controller
@@ -34,9 +39,10 @@ class QuizController extends Controller
     {
         try {
             $Quiz = Quiz::where('friendly_url', $slug)->first();
+            $Theory = Quiz::where('theory_id',$Quiz->theory_id)->first();
             $Question = Question::with('AnswerUser')->where("quiz_id", $Quiz->id)->paginate(10);
 
-            if (!$Quiz->display || !$Quiz->category->display || !$Quiz->theory->display) {
+            if (!$Quiz->display || !$Quiz->category->display || !$Theory->display) {
                 return response()->json([
                     'status' => false,
                     'error' => 'Bài thi này hiện không khả dụng'
@@ -48,7 +54,8 @@ class QuizController extends Controller
                     'status' => true,
                     'data' => [
                         'quiz' => $Quiz,
-                        'questions' => $Question
+                        'theory_friendly_url' => $Theory->friendly_url,
+                        'questions' => $Question,
                     ]
 
                 ]);
@@ -67,8 +74,6 @@ class QuizController extends Controller
     }
     public function submitQuiz(Request $request)
     {
-
-
         try {
             $member = Auth::guard('member')->user();
             $data = $request->all();
@@ -193,4 +198,5 @@ class QuizController extends Controller
             ], 422);
         }
     }
+
 }

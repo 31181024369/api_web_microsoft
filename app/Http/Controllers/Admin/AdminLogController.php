@@ -18,53 +18,57 @@ class AdminLogController extends Controller
             $startTime = $request->input('start_time');
             $endTime = $request->input('end_time');
 
-            if ($data) {
-                $query->where(function ($q) use ($data) {
-                    $q->where('action', 'LIKE', "%{$data}%")
-                        ->orWhere('cat', 'LIKE', "%{$data}%")
-                        ->orWhere('description', 'LIKE', "%{$data}%");
-                });
-            }
+            if ($data || $startTime || $endTime) {
+                $query->where(function ($query) use ($data, $startTime, $endTime) {
+                    if ($data) {
+                        $query->whereHas('member', function ($q) use ($data) {
+                            $q->where(function ($innerQ) use ($data) {
+                                $innerQ->where('username', 'LIKE', "%{$data}%");
+                            });
+                        });
+                    }
 
-            if ($startTime && $endTime) {
-                try {
-                    $start = Carbon::createFromTimestamp((int)$startTime)
-                        ->setTimezone('Asia/Ho_Chi_Minh')
-                        ->startOfDay();
-                    $end = Carbon::createFromTimestamp((int)$endTime)
-                        ->setTimezone('Asia/Ho_Chi_Minh')
-                        ->endOfDay();
-                    $query->whereBetween('created_at', [$start, $end]);
-                } catch (\Exception $e) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Invalid date format'
-                    ], 400);
-                }
-            } elseif ($startTime) {
-                try {
-                    $start = Carbon::createFromTimestamp((int)$startTime)
-                        ->setTimezone('Asia/Ho_Chi_Minh')
-                        ->startOfDay();
-                    $query->whereDate('created_at', '>=', $start);
-                } catch (\Exception $e) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Invalid start date'
-                    ], 400);
-                }
-            } elseif ($endTime) {
-                try {
-                    $end = Carbon::createFromTimestamp((int)$endTime)
-                        ->setTimezone('Asia/Ho_Chi_Minh')
-                        ->endOfDay();
-                    $query->whereDate('created_at', '<=', $end);
-                } catch (\Exception $e) {
-                    return response()->json([
-                        'status' => false,
-                        'message' => 'Invalid end date'
-                    ], 400);
-                }
+                    if ($startTime && $endTime) {
+                        try {
+                            $start = \Carbon\Carbon::createFromTimestamp((int)$startTime)
+                                ->setTimezone('Asia/Ho_Chi_Minh')
+                                ->startOfDay();
+                            $end = \Carbon\Carbon::createFromTimestamp((int)$endTime)
+                                ->setTimezone('Asia/Ho_Chi_Minh')
+                                ->endOfDay();
+                            $query->whereBetween('created_at', [$start, $end]);
+                        } catch (\Exception $e) {
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Invalid date format'
+                            ], 400);
+                        }
+                    } elseif ($startTime) {
+                        try {
+                            $start = \Carbon\Carbon::createFromTimestamp((int)$startTime)
+                                ->setTimezone('Asia/Ho_Chi_Minh')
+                                ->startOfDay();
+                            $query->whereDate('created_at', '>=', $start);
+                        } catch (\Exception $e) {
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Invalid start date format'
+                            ], 400);
+                        }
+                    } elseif ($endTime) {
+                        try {
+                            $end = \Carbon\Carbon::createFromTimestamp((int)$endTime)
+                                ->setTimezone('Asia/Ho_Chi_Minh')
+                                ->endOfDay();
+                            $query->whereDate('created_at', '<=', $end);
+                        } catch (\Exception $e) {
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Invalid end date format'
+                            ], 400);
+                        }
+                    }
+                });
             }
 
             $query->orderBy('created_at', 'desc');

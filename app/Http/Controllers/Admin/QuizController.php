@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Quiz;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class QuizController extends Controller
 {
@@ -46,6 +47,11 @@ class QuizController extends Controller
                         'category_title' => $quiz->category ? $quiz->category->title : null,
                         'theory_id' => $quiz->theory_id,
                         'theory_title' => $quiz->theory ? $quiz->theory->title : null,
+                        'expirationDate' => $quiz->expirationDate
+                            ? (is_numeric($quiz->expirationDate)
+                                ? Carbon::createFromTimestamp($quiz->expirationDate)->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s')
+                                : Carbon::parse($quiz->expirationDate)->setTimezone('Asia/Ho_Chi_Minh')->format('d/m/Y H:i:s'))
+                            : null,
                         'created_at' => $quiz->created_at,
                         'updated_at' => $quiz->updated_at
                     ];
@@ -113,6 +119,7 @@ class QuizController extends Controller
             $Quiz->friendly_title = $request->pageTitle;
             $Quiz->metakey = $request->metaKeyword;
             $Quiz->metadesc = $request->metaDesc;
+            $Quiz->expirationDate = $request->expirationDate ?? null;
             $Quiz->save();
             foreach ($request->questions as $questions) {
 
@@ -212,6 +219,18 @@ class QuizController extends Controller
             } else {
                 $filePath = $Quiz->picture;
             }
+            if ($request->has('expirationDate')) {
+                $expirationDate = $request->expirationDate;
+
+                if (is_numeric($expirationDate)) {
+                    $Quiz->expirationDate = $expirationDate;
+                } else {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Invalid expirationDate format'
+                    ], 400);
+                }
+            }
 
             $Quiz->name = $request->title;
             $Quiz->picture = $filePath;
@@ -224,6 +243,7 @@ class QuizController extends Controller
             $Quiz->friendly_title = $request->pageTitle;
             $Quiz->metakey = $request->metaKeyword;
             $Quiz->metadesc = $request->metaDesc;
+            $Quiz->expirationDate = $request->expirationDate ?? null;
             $Quiz->save();
 
 

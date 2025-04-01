@@ -10,6 +10,7 @@ class GiftRedeemMail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $recipientEmail;
     public $recipientName;
     public $giftName;
     public $giftDescription;
@@ -21,6 +22,7 @@ class GiftRedeemMail extends Mailable
 
     public function __construct($data)
     {
+        $this->recipientEmail = $data['recipientEmail'];
         $this->recipientName = $data['recipientName'];
         $this->giftName = $data['giftName'];
         $this->giftDescription = $data['giftDescription'];

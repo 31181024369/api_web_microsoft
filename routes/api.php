@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\GifthistoryController;
 //Admin Auth
 Route::match(['get', 'post'], '/admin-login', [App\Http\Controllers\Admin\LoginAdminController::class, 'login'])->name('admin-login');
 Route::get('/admin-information', [App\Http\Controllers\Admin\LoginAdminController::class, 'information']);
@@ -38,13 +39,13 @@ Route::group(['prefix' => 'member'], function () {
     Route::get('show-product', [App\Http\Controllers\Member\ProductController::class, 'showUser']);
 
     Route::get('/show-quiz', [App\Http\Controllers\Member\QuizController::class, 'showQuiz']);
-    Route::get('/show-quiz-detail/{slug}', [App\Http\Controllers\Member\QuizController::class, 'showDetailQuiz']);
+    Route::get('/show-quiz-detail/{slug}', [App\Http\Controllers\Member\QuizController::class, 'showDetailQuiz'])->middleware('log.member');
     Route::post('/submit-quiz', [App\Http\Controllers\Member\QuizController::class, 'submitQuiz']);
 
     //Theory Member
     Route::resource('theory', App\Http\Controllers\Member\TheoryControler::class);
     Route::delete('theorys/delete', [App\Http\Controllers\Member\TheoryControler::class, 'delete']);
-    Route::get('theorys/{friendly_url}', [App\Http\Controllers\Member\TheoryControler::class, 'shows']);
+    Route::get('theorys/{friendly_url}', [App\Http\Controllers\Member\TheoryControler::class, 'shows'])->middleware('log.member');
     Route::get('get-newstheory', [App\Http\Controllers\Member\TheoryControler::class, 'take5theory']);
     Route::get('/category/{id}', [App\Http\Controllers\Member\TheoryControler::class, 'showCategory']);
     Route::get('infor-member', [App\Http\Controllers\Member\MemberController::class, 'inforMember']);
@@ -70,16 +71,23 @@ Route::group(['middleware' => 'admin'], function () {
     Route::get('gift-history', [App\Http\Controllers\Admin\GifthistoryController::class, 'index']);
     Route::get('detail-gift-history/{id}', [App\Http\Controllers\Admin\GifthistoryController::class, 'detail']);
     Route::patch('gifts/{id}/confirm', [App\Http\Controllers\Admin\GifthistoryController::class, 'confirm']);
+    Route::get('admin/gift-history/export', [GifthistoryController::class, 'export']);
 });
+Route::get('admin/gift-history/exports', [GifthistoryController::class, 'export']);
 //Gift Member
-Route::get('gift-member', [App\Http\Controllers\Member\GiftController::class, 'index']);
+Route::get('gift-member', [App\Http\Controllers\Member\GiftController::class, 'index'])->middleware('log.member');
 Route::post('gifts/{id}/redeem', [App\Http\Controllers\Member\GiftController::class, 'redeem']);
-Route::get('member/gift-history', [App\Http\Controllers\Member\GiftHiststoryController::class, 'index']);
+Route::get('member/gift-history', [App\Http\Controllers\Member\GiftHiststoryController::class, 'index'])->middleware('log.member');
 
 //Quiz History Member
 Route::get('member/quiz-history', [App\Http\Controllers\Member\QuizHistoryController::class, 'index']);
 //Quiz member
+Route::post('/send-gift-email', [App\Http\Controllers\Member\GiftController::class, 'sendGiftRedeemEmail']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+Route::get('take_category_theory', [App\Http\Controllers\Member\TheoryControler::class, 'take_category_theory']);
+//API ghi log member
+Route::get('admin/member_log', [App\Http\Controllers\Admin\MemberLogController::class, 'index']);

@@ -128,24 +128,31 @@ class GiftController extends Controller
             $gift->display = $validatedData['display'];
             $gift->quantity = $validatedData['quantity'];
 
-            $filePath = '';
-            $disPath = public_path();
-            if ($request->picture != null && $gift->picture !=  $request->picture) {
-                $DIR = $disPath . '\uploads\gift';
-                $httpPost = file_get_contents('php://input');
+            if ($request->picture != null && $request->picture !== $gift->picture) {
+                if ($gift->picture) {
+                    $oldImagePath = public_path('uploads/' . $gift->picture);
+                    if (File::exists($oldImagePath)) {
+                        File::delete($oldImagePath);
+                    }
+                }
+
+                $DIR = 'uploads/gift';
                 $file_chunks = explode(';base64,', $request->picture[0]);
                 $fileType = explode('image/', $file_chunks[0]);
-                $image_type = $fileType[0];
                 $base64Img = base64_decode($file_chunks[1]);
-                $data = iconv('latin5', 'utf-8', $base64Img);
                 $name = uniqid();
-                $file = $DIR . '\\' . $name . '.png';
+
+                if (!File::exists(public_path($DIR))) {
+                    File::makeDirectory(public_path($DIR), 0777, true);
+                }
+
+                $file = public_path($DIR) . '/' . $name . '.png';
                 $filePath = 'gift/' . $name . '.png';
-                file_put_contents($file,  $base64Img);
-            } else {
-                $filePath =  $gift->picture;
+                file_put_contents($file, $base64Img);
+
+                $gift->picture = $filePath;
             }
-            $gift->picture = $filePath;
+
             $gift->save();
             $gift = $gift->makeHidden(['created_at', 'updated_at']);
             return response()->json([
